@@ -54,7 +54,11 @@ def enrich_source_publication(source: SourceDocument, options: ParseOptions) -> 
                 layout_name="Model",
                 viewport_record_id=None,
                 role="authoring_model",
-                notes=["Full model-space entity list in sources[].entities with layout Model."],
+                notes=[
+                    "Full model-space entity list in sources[].entities with layout Model.",
+                    'CAD users often say "sheet" for a layout tab; this JSON uses each layout\'s stored name.',
+                    "Sheet Set Manager (.dst) is external to the DWG; use layouts here plus sidecar files for project-level sheet lists.",
+                ],
             )
         )
 

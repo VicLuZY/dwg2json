@@ -31,6 +31,10 @@ dwg2json parse <path> [options]
 | `--emit-vp-layer-overrides` / `--no-emit-vp-layer-overrides` | `True` | Per-viewport `frozen_layer_names` |
 | `--emit-publication-index` / `--no-emit-publication-index` | `True` | `SourceDocument.publication_index` |
 | `--emit-layout-compositions` / `--no-emit-layout-compositions` | `True` | Extra `Composition` rows (`layout_sheet`) |
+| `--emit-layout-plot-settings` / `--no-emit-layout-plot-settings` | `True` | `Layout.plot_settings` (page setup / CTB / paper size) |
+| `--emit-geodata` / `--no-emit-geodata` | `True` | `SourceDocument.geodata` (GEODATA summary) |
+| `--emit-spatial-sidecar-hints` / `--no-emit-spatial-sidecar-hints` | `True` | `metadata.spatial_sidecar_hints` (.prj / .wld) |
+| `--emit-field-literal-warnings` / `--no-emit-field-literal-warnings` | `True` | Info if MTEXT contains `%<` field-like literals |
 
 **Examples:**
 

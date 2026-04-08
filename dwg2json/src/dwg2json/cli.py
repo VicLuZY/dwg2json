@@ -66,6 +66,17 @@ def parse(
     emit_layout_compositions: bool = typer.Option(
         True, "--emit-layout-compositions/--no-emit-layout-compositions",
     ),
+    emit_layout_plot_settings: bool = typer.Option(
+        True, "--emit-layout-plot-settings/--no-emit-layout-plot-settings",
+    ),
+    emit_geodata: bool = typer.Option(True, "--emit-geodata/--no-emit-geodata"),
+    emit_spatial_sidecar_hints: bool = typer.Option(
+        True, "--emit-spatial-sidecar-hints/--no-emit-spatial-sidecar-hints",
+    ),
+    emit_field_literal_warnings: bool = typer.Option(
+        True,
+        "--emit-field-literal-warnings/--no-emit-field-literal-warnings",
+    ),
 ) -> None:
     """Parse a DWG file and emit one canonical JSON file."""
     parser = Dwg2JsonParser(backend=backend)
@@ -85,6 +96,10 @@ def parse(
         emit_vp_layer_overrides=emit_vp_layer_overrides,
         emit_publication_index=emit_publication_index,
         emit_layout_compositions=emit_layout_compositions,
+        emit_layout_plot_settings=emit_layout_plot_settings,
+        emit_geodata=emit_geodata,
+        emit_spatial_sidecar_hints=emit_spatial_sidecar_hints,
+        emit_field_literal_warnings=emit_field_literal_warnings,
     )
 
     result = parser.parse(path, options)

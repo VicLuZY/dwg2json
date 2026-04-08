@@ -94,9 +94,14 @@ class TestLibreDwgDxfPublication:
         source = result.document.root_source
         assert source.parsed
 
-        vps = [ly for ly in source.layouts if ly.name == "PubLayout"][0].viewports
+        pub_ly = [ly for ly in source.layouts if ly.name == "PubLayout"][0]
+        assert pub_ly.plot_settings is not None
+        assert "paper_size" in pub_ly.plot_settings
+        vps = pub_ly.viewports
         assert len(vps) >= 1
         assert vps[0].view_height_model == 35.0
+        assert vps[0].model_to_paper_scale is not None
+        assert vps[0].model_to_paper_scale > 0
 
         by_layer = {la.name: la for la in source.layers}
         assert by_layer["NOPLOT"].is_plottable is False

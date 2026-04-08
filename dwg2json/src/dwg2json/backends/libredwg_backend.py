@@ -16,6 +16,7 @@ from __future__ import annotations
 import logging
 import math
 import os
+import re
 import shutil
 import subprocess
 import tempfile
@@ -27,6 +28,7 @@ from ..models import (
     BlockDefinition,
     DwgJsonDocument,
     Entity,
+    GeodataSummary,
     Layer,
     Layout,
     ParseOptions,
@@ -172,17 +174,26 @@ class LibreDwgBackend(DwgBackend):
     ) -> ParseResult:
         warnings: list[WarningRecord] = []
         layers = self._extract_layers(root_id, dxf_doc, options)
-        layouts = self._extract_layouts(root_id, dxf_doc)
+        layouts = self._extract_layouts(root_id, dxf_doc, options)
         blocks, raw_xrefs = self._extract_blocks(root_id, dxf_doc)
         layers_by_name = {la.name: la for la in layers}
         vp_by_layout: dict[str, list[ViewportRecord]] = defaultdict(list)
         entities, entity_warnings = self._extract_entities(
-            root_id, dxf_doc, options, layers_by_name, vp_by_layout
+            root_id, dxf_doc, options, layers_by_name, vp_by_layout, warnings
         )
         warnings.extend(entity_warnings)
         self._merge_viewports_into_layouts(layouts, vp_by_layout, options)
+        _append_publication_research_warnings(root_id, dxf_doc, layouts, warnings)
+        _maybe_warn_field_literals(root_id, entities, options, warnings)
         doc_metadata = self._extract_metadata(dxf_doc)
         doc_metadata["raw_xrefs"] = raw_xrefs
+        if options.emit_spatial_sidecar_hints:
+            doc_metadata["spatial_sidecar_hints"] = _spatial_sidecar_hints(path)
+        caps: dict[str, str] = {"layer_viewport_property_overrides": "none_detected"}
+        _detect_layer_vp_property_overrides(root_id, dxf_doc, caps, warnings)
+        geodata_summary = _extract_geodata_summary(dxf_doc, options)
+        caps["geodata"] = "exported" if geodata_summary is not None else "absent"
+        doc_metadata["backend_capabilities"] = caps
 
         source = SourceDocument(
             id=root_id,
@@ -198,6 +209,7 @@ class LibreDwgBackend(DwgBackend):
             blocks=blocks,
             entities=entities,
             warnings=warnings,
+            geodata=geodata_summary,
         )
 
         document = DwgJsonDocument(
@@ -233,7 +245,9 @@ class LibreDwgBackend(DwgBackend):
             meta["dwg_version"] = str(getattr(header, "version", None))
             units_var = header.get("$INSUNITS", None)
             if units_var is not None:
-                meta["units"] = _UNIT_MAP.get(int(units_var), f"code_{units_var}")
+                ui = int(units_var)
+                meta["insunits"] = ui
+                meta["units"] = _UNIT_MAP.get(ui, f"code_{ui}")
             for var_name in ("$EXTMIN", "$EXTMAX"):
                 val = header.get(var_name, None)
                 if val is not None:
@@ -276,16 +290,20 @@ class LibreDwgBackend(DwgBackend):
             log.warning("Layer extraction error: %s", exc)
         return layers
 
-    def _extract_layouts(self, root_id: str, dxf_doc: Any) -> list[Layout]:
+    def _extract_layouts(self, root_id: str, dxf_doc: Any, options: ParseOptions) -> list[Layout]:
         layouts: list[Layout] = []
         try:
             for idx, layout in enumerate(dxf_doc.layouts):
+                plot_settings = None
+                if options.emit_layout_plot_settings:
+                    plot_settings = _layout_plot_settings_dict(layout)
                 layouts.append(
                     Layout(
                         id=f"{root_id}__layout_{layout.name}",
                         name=layout.name,
                         is_model_space=(layout.name == "Model"),
                         tab_order=idx,
+                        plot_settings=plot_settings,
                     )
                 )
         except Exception as exc:
@@ -336,6 +354,7 @@ class LibreDwgBackend(DwgBackend):
         options: ParseOptions,
         layers_by_name: dict[str, Layer],
         vp_by_layout: dict[str, list[ViewportRecord]],
+        parse_warnings: list[WarningRecord],
     ) -> tuple[list[Entity], list[WarningRecord]]:
         entities: list[Entity] = []
         warnings: list[WarningRecord] = []
@@ -352,6 +371,7 @@ class LibreDwgBackend(DwgBackend):
                         options,
                         layers_by_name,
                         vp_by_layout,
+                        parse_warnings,
                     )
                     if ent is not None:
                         entities.append(ent)
@@ -389,6 +409,7 @@ class LibreDwgBackend(DwgBackend):
         options: ParseOptions,
         layers_by_name: dict[str, Layer],
         vp_by_layout: dict[str, list[ViewportRecord]],
+        parse_warnings: list[WarningRecord],
     ) -> Entity | None:
         dxf = dxf_entity.dxf
         handle = str(dxf.get("handle", ""))
@@ -415,7 +436,9 @@ class LibreDwgBackend(DwgBackend):
                 ent.non_plot_candidate = not lao.is_plottable
 
         if options.emit_viewport_records and etype == "VIEWPORT":
-            vp_rec = _build_viewport_record(root_id, layout_name, dxf_entity, options)
+            vp_rec = _build_viewport_record(
+                root_id, layout_name, dxf_entity, options, parse_warnings
+            )
             if vp_rec is not None:
                 vp_by_layout[layout_name].append(vp_rec)
 
@@ -587,6 +610,131 @@ class LibreDwgBackend(DwgBackend):
 # Module-level helper functions
 # ======================================================================
 
+_MAX_CRS_XML = 65536
+
+_COORD_TYPE_NAMES = {0: "unknown", 1: "local_grid", 2: "projected_grid", 3: "geographic"}
+
+
+def _vec3_from_vec2(val: Any) -> list[float] | None:
+    v = _vec(val)
+    if v is None:
+        return None
+    if len(v) == 2:
+        return [v[0], v[1], 0.0]
+    return v
+
+
+def _spatial_sidecar_hints(path: Path) -> dict[str, bool]:
+    parent = path.parent
+    stem = path.stem
+    return {
+        "prj_present": (parent / f"{stem}.prj").is_file(),
+        "wld3_present": (parent / f"{stem}.wld3").is_file(),
+        "wld_present": (parent / f"{stem}.wld").is_file(),
+    }
+
+
+def _extract_epsg_hints(xml: str) -> list[int]:
+    found: set[int] = set()
+    for pat in (
+        r'<Alias id="(\d+)" type="CoordinateSystem"',
+        r"EPSG:(\d+)",
+        r"epsg:(\d+)",
+    ):
+        for m in re.finditer(pat, xml, flags=re.IGNORECASE):
+            try:
+                found.add(int(m.group(1)))
+            except (ValueError, IndexError):
+                pass
+    return sorted(found)[:32]
+
+
+def _extract_geodata_summary(dxf_doc: Any, options: ParseOptions) -> GeodataSummary | None:
+    if not options.emit_geodata:
+        return None
+    try:
+        gd = dxf_doc.modelspace().get_geodata()
+    except Exception:
+        return None
+    if gd is None:
+        return None
+    dxf = gd.dxf
+    ctype_raw = dxf.get("coordinate_type", None)
+    ctype: int | None = None
+    try:
+        if ctype_raw is not None:
+            ctype = int(ctype_raw)
+    except (TypeError, ValueError):
+        ctype = None
+    raw_xml = getattr(gd, "coordinate_system_definition", None) or ""
+    truncated = len(raw_xml) > _MAX_CRS_XML
+    xml_out = raw_xml[:_MAX_CRS_XML] if truncated else raw_xml
+    xml_out = xml_out.strip() or None
+    try:
+        slc_raw = dxf.get("sea_level_correction", None)
+        slc_b = bool(int(slc_raw)) if slc_raw is not None else None
+    except (TypeError, ValueError):
+        slc_b = None
+    mesh_n: int | None = None
+    mesh_f: int | None = None
+    try:
+        mesh_n = len(gd.source_vertices)
+        mesh_f = len(gd.faces)
+    except Exception:
+        pass
+    h_scale = dxf.get("horizontal_unit_scale", None)
+    v_scale = dxf.get("vertical_unit_scale", None)
+    return GeodataSummary(
+        dxf_version=dxf.get("version", None),
+        coordinate_type=ctype,
+        coordinate_type_name=_COORD_TYPE_NAMES.get(ctype, str(ctype)) if ctype is not None else None,
+        design_point=_vec(dxf.get("design_point", None)),
+        reference_point=_vec(dxf.get("reference_point", None)),
+        horizontal_unit_scale=float(h_scale) if h_scale is not None else None,
+        vertical_unit_scale=float(v_scale) if v_scale is not None else None,
+        horizontal_units=dxf.get("horizontal_units", None),
+        vertical_units=dxf.get("vertical_units", None),
+        up_direction=_vec(dxf.get("up_direction", None)),
+        north_direction=_vec3_from_vec2(dxf.get("north_direction", None)),
+        scale_estimation_method=dxf.get("scale_estimation_method", None),
+        user_scale_factor=dxf.get("user_scale_factor", None),
+        sea_level_correction=slc_b,
+        coordinate_system_definition=xml_out,
+        coordinate_system_definition_truncated=truncated,
+        epsg_code_hints=_extract_epsg_hints(raw_xml),
+        geo_mesh_vertex_count=mesh_n,
+        geo_mesh_face_count=mesh_f,
+    )
+
+
+def _maybe_warn_field_literals(
+    root_id: str,
+    entities: list[Entity],
+    options: ParseOptions,
+    warnings: list[WarningRecord],
+) -> None:
+    if not options.emit_field_literal_warnings:
+        return
+    n = 0
+    for ent in entities:
+        if ent.type != "MTEXT" or not ent.text:
+            continue
+        if "%<" in ent.text:
+            n += 1
+    if n:
+        warnings.append(
+            WarningRecord(
+                code="mtext-field-literals",
+                message=(
+                    f"{n} MTEXT entity(ies) contain field-like %< sequences; exported "
+                    "`text` is cached display content, not a live-evaluated ACAD_FIELD."
+                ),
+                severity="info",
+                source_id=root_id,
+            )
+        )
+
+
 _UNIT_MAP: dict[int, str] = {
     0: "unitless", 1: "inches", 2: "feet", 3: "miles", 4: "millimeters",
     5: "centimeters", 6: "meters", 7: "kilometers", 8: "microinches",
@@ -615,11 +763,141 @@ def _clean_handle(val: Any) -> str | None:
     return s
 
 
+def _json_safe_plot_value(val: Any) -> Any:
+    if isinstance(val, (bool, int, float, str)):
+        return val
+    try:
+        return float(val)
+    except (TypeError, ValueError):
+        pass
+    try:
+        return [float(x) for x in val]
+    except Exception:
+        return str(val)
+
+
+_LAYOUT_PLOT_SETTING_KEYS: tuple[str, ...] = (
+    "page_setup_name",
+    "plot_configuration_file",
+    "paper_size",
+    "plot_view_name",
+    "left_margin",
+    "bottom_margin",
+    "right_margin",
+    "top_margin",
+    "paper_width",
+    "paper_height",
+    "plot_origin_x_offset",
+    "plot_origin_y_offset",
+    "plot_window_x1",
+    "plot_window_y1",
+    "plot_window_x2",
+    "plot_window_y2",
+    "scale_numerator",
+    "scale_denominator",
+    "plot_layout_flags",
+    "plot_paper_units",
+    "plot_rotation",
+    "plot_type",
+    "current_style_sheet",
+    "standard_scale_type",
+    "shade_plot_mode",
+    "shade_plot_resolution_level",
+    "shade_plot_custom_dpi",
+    "unit_factor",
+    "paper_image_origin_x",
+    "paper_image_origin_y",
+)
+
+
+def _layout_plot_settings_dict(ez_layout: Any) -> dict[str, Any] | None:
+    """Extract AcDbPlotSettings fields from the LAYOUT object (ezdxf Layout)."""
+    try:
+        dxf = ez_layout.dxf_layout.dxf
+    except Exception:
+        return None
+    out: dict[str, Any] = {}
+    try:
+        for key in _LAYOUT_PLOT_SETTING_KEYS:
+            if not dxf.hasattr(key):
+                continue
+            val = dxf.get(key)
+            if val is None:
+                continue
+            if isinstance(val, str) and not val.strip():
+                continue
+            out[key] = _json_safe_plot_value(val)
+    except Exception:
+        return out or None
+    return out or None
+
+
+def _append_publication_research_warnings(
+    root_id: str,
+    dxf_doc: Any,
+    layouts: list[Layout],
+    warnings: list[WarningRecord],
+) -> None:
+    """Heuristics from real-world sheet / viewport usage (CAD publication context)."""
+    by_name = {ly.name: ly for ly in layouts}
+    try:
+        for ez_layout in dxf_doc.layouts:
+            if ez_layout.name == "Model":
+                continue
+            ly = by_name.get(ez_layout.name)
+            if ly is None or not ly.viewports:
+                continue
+            has_vp1 = any(v.viewport_dxf_id == 1 for v in ly.viewports)
+            if not has_vp1:
+                warnings.append(
+                    WarningRecord(
+                        code="missing-paperspace-viewport-id-1",
+                        message=(
+                            f"Layout {ez_layout.name!r} has VIEWPORT entities but none with "
+                            "DXF id 1; some CAD apps expect id 1 as the layout tab viewport."
+                        ),
+                        severity="info",
+                        source_id=root_id,
+                    )
+                )
+    except Exception:
+        pass
+
+
+def _detect_layer_vp_property_overrides(
+    root_id: str,
+    dxf_doc: Any,
+    capabilities: dict[str, str],
+    warnings: list[WarningRecord],
+) -> None:
+    """Per-viewport layer color/linetype overrides live in extension dicts — not exported."""
+    try:
+        for la in dxf_doc.layers:
+            ovr = la.get_vp_overrides()
+            if ovr.has_overrides():
+                capabilities["layer_viewport_property_overrides"] = "not_exported"
+                warnings.append(
+                    WarningRecord(
+                        code="layer-vp-property-overrides-not-exported",
+                        message=(
+                            "One or more layers define per-viewport property overrides "
+                            "(color, linetype, …) in DXF OBJECTS; dwg2json does not expand these yet."
+                        ),
+                        severity="info",
+                        source_id=root_id,
+                    )
+                )
+                return
+    except Exception:
+        capabilities["layer_viewport_property_overrides"] = "unknown"
+
+
 def _build_viewport_record(
     root_id: str,
     layout_name: str,
     dxf_entity: Any,
     options: ParseOptions,
+    parse_warnings: list[WarningRecord],
 ) -> ViewportRecord | None:
     dxf = dxf_entity.dxf
     handle = str(dxf.get("handle", ""))
@@ -661,6 +939,50 @@ def _build_viewport_record(
     except (TypeError, ValueError):
         pass
 
+    fl = dxf.get("flags", None)
+    try:
+        fl_int = int(fl) if fl is not None else 0
+    except (TypeError, ValueError):
+        fl_int = 0
+
+    viewport_zoom_locked: bool | None = None
+    non_rectangular_clipping: bool | None = None
+    try:
+        from ezdxf.lldxf import const as ez_const
+
+        viewport_zoom_locked = bool(fl_int & ez_const.VSF_VIEWPORT_ZOOM_LOCKING)
+        non_rectangular_clipping = bool(fl_int & ez_const.VSF_NON_RECTANGULAR_CLIPPING)
+    except Exception:
+        pass
+
+    model_to_paper_scale: float | None = None
+    try:
+        if hasattr(dxf_entity, "get_scale"):
+            s = float(dxf_entity.get_scale())
+            model_to_paper_scale = s if abs(s) > 1e-12 else None
+    except Exception:
+        pass
+
+    if non_rectangular_clipping:
+        clip_ok = bool(_clean_handle(dxf.get("clipping_boundary_handle", None)))
+        try:
+            clip_ok = clip_ok or bool(dxf_entity.has_extended_clipping_path)
+        except Exception:
+            pass
+        if not clip_ok:
+            parse_warnings.append(
+                WarningRecord(
+                    code="viewport-clip-unresolved",
+                    message=(
+                        f"Viewport #{handle} on layout {layout_name!r} requests non-rectangular "
+                        "clipping but has no resolvable clipping boundary handle."
+                    ),
+                    severity="info",
+                    source_id=root_id,
+                    handle=handle,
+                )
+            )
+
     return ViewportRecord(
         id=f"{root_id}__vp_{handle}",
         handle=handle,
@@ -672,6 +994,7 @@ def _build_viewport_record(
         paper_height=float(height) if height is not None else None,
         view_center_model=view_center_model,
         view_height_model=float(view_height_model) if view_height_model is not None else None,
+        model_to_paper_scale=model_to_paper_scale,
         scale_zoom_xp=scale_zoom_xp,
         view_direction=_vec(dxf.get("view_direction_vector", None)),
         view_target=_vec(dxf.get("view_target_point", None)),
@@ -680,7 +1003,9 @@ def _build_viewport_record(
         ucs_handle=_clean_handle(dxf.get("ucs_handle", None)),
         clipping_boundary_handle=_clean_handle(dxf.get("clipping_boundary_handle", None)),
         frozen_layer_names=frozen,
-        flags=dxf.get("flags", None),
+        flags=fl_int if fl is not None else None,
+        viewport_zoom_locked=viewport_zoom_locked,
+        non_rectangular_clipping=non_rectangular_clipping,
         plot_style_name=(str(dxf.get("plot_style_name", "") or None) or None),
         render_mode=dxf.get("render_mode", None),
         metadata=meta,

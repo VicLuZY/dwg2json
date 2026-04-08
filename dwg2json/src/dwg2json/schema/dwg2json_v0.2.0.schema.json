@@ -579,6 +579,246 @@
       "title": "Entity",
       "type": "object"
     },
+    "GeodataSummary": {
+      "description": "Model-space GeoData (GEODATA / AcDbGeoData) for GIS and site workflows.",
+      "properties": {
+        "dxf_version": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Dxf Version"
+        },
+        "coordinate_type": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Coordinate Type"
+        },
+        "coordinate_type_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Coordinate Type Name"
+        },
+        "design_point": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Design Point"
+        },
+        "reference_point": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reference Point"
+        },
+        "horizontal_unit_scale": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Horizontal Unit Scale"
+        },
+        "vertical_unit_scale": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Vertical Unit Scale"
+        },
+        "horizontal_units": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Horizontal Units"
+        },
+        "vertical_units": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Vertical Units"
+        },
+        "up_direction": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Up Direction"
+        },
+        "north_direction": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "North Direction"
+        },
+        "scale_estimation_method": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Scale Estimation Method"
+        },
+        "user_scale_factor": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "User Scale Factor"
+        },
+        "sea_level_correction": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sea Level Correction"
+        },
+        "coordinate_system_definition": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Coordinate System Definition"
+        },
+        "coordinate_system_definition_truncated": {
+          "default": false,
+          "title": "Coordinate System Definition Truncated",
+          "type": "boolean"
+        },
+        "epsg_code_hints": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Epsg Code Hints",
+          "type": "array"
+        },
+        "geo_mesh_vertex_count": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Geo Mesh Vertex Count"
+        },
+        "geo_mesh_face_count": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Geo Mesh Face Count"
+        },
+        "spatial_reference_provenance": {
+          "default": "autodesk_geodata",
+          "title": "Spatial Reference Provenance",
+          "type": "string"
+        }
+      },
+      "title": "GeodataSummary",
+      "type": "object"
+    },
     "InterpretationConfidence": {
       "description": "Monotonic confidence heuristic (1.0 = full, 0.0 = no useful data).",
       "properties": {
@@ -739,6 +979,19 @@
           "default": 0,
           "title": "Tab Order",
           "type": "integer"
+        },
+        "plot_settings": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Plot Settings"
         },
         "viewports": {
           "items": {
@@ -1180,6 +1433,17 @@
           },
           "title": "Publication Index",
           "type": "array"
+        },
+        "geodata": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GeodataSummary"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         }
       },
       "required": [
@@ -1294,6 +1558,18 @@
           "default": null,
           "title": "View Height Model"
         },
+        "model_to_paper_scale": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Model To Paper Scale"
+        },
         "scale_zoom_xp": {
           "anyOf": [
             {
@@ -1402,6 +1678,30 @@
           ],
           "default": null,
           "title": "Flags"
+        },
+        "viewport_zoom_locked": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Viewport Zoom Locked"
+        },
+        "non_rectangular_clipping": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Non Rectangular Clipping"
         },
         "plot_style_name": {
           "anyOf": [

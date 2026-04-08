@@ -21,6 +21,7 @@ __all__ = [
     "CompositionKind",
     "DwgJsonDocument",
     "Entity",
+    "GeodataSummary",
     "InterpretationConfidence",
     "Layer",
     "Layout",
@@ -135,6 +136,8 @@ class ViewportRecord(BaseModel):
     paper_height: float | None = None
     view_center_model: list[float] | None = None
     view_height_model: float | None = None
+    # ezdxf Viewport.get_scale(): paper units per model unit (top-view approximation).
+    model_to_paper_scale: float | None = None
     scale_zoom_xp: float | None = None
     view_direction: list[float] | None = None
     view_target: list[float] | None = None
@@ -144,6 +147,8 @@ class ViewportRecord(BaseModel):
     clipping_boundary_handle: str | None = None
     frozen_layer_names: list[str] = Field(default_factory=list)
     flags: int | None = None
+    viewport_zoom_locked: bool | None = None
+    non_rectangular_clipping: bool | None = None
     plot_style_name: str | None = None
     render_mode: int | None = None
     metadata: dict[str, Any] = Field(default_factory=dict)
@@ -154,6 +159,8 @@ class Layout(BaseModel):
     name: str
     is_model_space: bool = False
     tab_order: int = 0
+    # Subset of AcDbPlotSettings / LAYOUT DXF fields (paper size, CTB/STB, scale hints).
+    plot_settings: dict[str, Any] | None = None
     viewports: list[ViewportRecord] = Field(default_factory=list)
     paper_space_entity_ids: list[str] = Field(default_factory=list)
     interpretation_notes: list[str] = Field(default_factory=list)
@@ -167,6 +174,31 @@ class PublicationIndexEntry(BaseModel):
     viewport_record_id: str | None = None
     role: str
     notes: list[str] = Field(default_factory=list)
+
+
+class GeodataSummary(BaseModel):
+    """Model-space GeoData (GEODATA / AcDbGeoData) for GIS and site workflows."""
+
+    dxf_version: int | None = None
+    coordinate_type: int | None = None
+    coordinate_type_name: str | None = None
+    design_point: list[float] | None = None
+    reference_point: list[float] | None = None
+    horizontal_unit_scale: float | None = None
+    vertical_unit_scale: float | None = None
+    horizontal_units: int | None = None
+    vertical_units: int | None = None
+    up_direction: list[float] | None = None
+    north_direction: list[float] | None = None
+    scale_estimation_method: int | None = None
+    user_scale_factor: float | None = None
+    sea_level_correction: bool | None = None
+    coordinate_system_definition: str | None = None
+    coordinate_system_definition_truncated: bool = False
+    epsg_code_hints: list[int] = Field(default_factory=list)
+    geo_mesh_vertex_count: int | None = None
+    geo_mesh_face_count: int | None = None
+    spatial_reference_provenance: str = "autodesk_geodata"
 
 
 class BlockDefinition(BaseModel):
@@ -278,6 +310,7 @@ class SourceDocument(BaseModel):
     warnings: list[WarningRecord] = Field(default_factory=list)
     raw_summary: dict[str, Any] | None = None
     publication_index: list[PublicationIndexEntry] = Field(default_factory=list)
+    geodata: GeodataSummary | None = None
 
 
 # ---------------------------------------------------------------------------
@@ -539,6 +572,10 @@ class ParseOptions(BaseModel):
     emit_vp_layer_overrides: bool = True
     emit_publication_index: bool = True
     emit_layout_compositions: bool = True
+    emit_layout_plot_settings: bool = True
+    emit_geodata: bool = True
+    emit_spatial_sidecar_hints: bool = True
+    emit_field_literal_warnings: bool = True
 
 
 class ParseResult(BaseModel):

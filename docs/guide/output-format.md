@@ -69,11 +69,16 @@ For xref children, `role` is `"xref"` and `xref_binding` contains the saved path
 - **`Entity.space_class`** — `"model"` when `layout` is Model, otherwise `"paper"` for entities emitted from a paper-space layout tab.
 - **`Entity.non_plot_candidate`** — When layer plot flags are emitted, `true` if the entity’s layer is marked non-plottable in DXF.
 - **`Layer.is_plottable`** — DXF layer plot flag when available (default treated as plottable when unspecified).
-- **`Layout.viewports`** — `ViewportRecord` entries (paper size, model view, scale hint, UCS, clipping, per-viewport frozen layer names when present).
+- **`Layout.plot_settings`** — Optional dict of **AcDbPlotSettings** fields from the LAYOUT object (paper size string, `current_style_sheet` CTB/STB name, margins, `plot_type`, `standard_scale_type`, numeric paper width/height in mm, etc.).
+- **`Layout.viewports`** — `ViewportRecord` entries (paper size, model view, `model_to_paper_scale` from ezdxf, `viewport_zoom_locked`, `non_rectangular_clipping`, UCS, frozen layer names when present).
 - **`Layout.paper_space_entity_ids`** — Handles (canonical entity `id` values) for paper-native geometry on that layout.
 - **`SourceDocument.publication_index`** — Compact `{ layout_name, viewport_record_id, role, notes }` entries for navigation.
+- **`SourceDocument.geodata`** — When the drawing has model-space **GEODATA** (AutoCAD / Map 3D style geolocation), a **`GeodataSummary`** is emitted: coordinate type, design/reference points, unit scales, optional CRS XML (truncated if huge), **`epsg_code_hints`** heuristically parsed from XML, and mesh counts. **`metadata.insunits`** holds the raw `$INSUNITS` integer; **`metadata.units`** remains the human-readable unit name.
+- **`metadata.spatial_sidecar_hints`** — Whether **`basename.prj`**, **`.wld3`**, or **`.wld`** exist beside the drawing (common for GIS workflows; Esri often expects a sidecar `.prj`).
 
-Disable enrichment via `ParseOptions` (`emit_viewport_records`, `emit_layer_plot_flags`, `emit_vp_layer_overrides`, `emit_publication_index`, `emit_layout_compositions`).
+Disable enrichment via `ParseOptions` (e.g. `emit_viewport_records`, `emit_layer_plot_flags`, `emit_vp_layer_overrides`, `emit_publication_index`, `emit_layout_compositions`, `emit_layout_plot_settings`, `emit_geodata`, `emit_spatial_sidecar_hints`, `emit_field_literal_warnings`).
+
+**Warnings** may include `missing-paperspace-viewport-id-1`, `viewport-clip-unresolved`, `layer-vp-property-overrides-not-exported`, and `mtext-field-literals` (MTEXT with `%<` cached field syntax). Check **`sources[].metadata.backend_capabilities`** for `layer_viewport_property_overrides` and **`geodata`** (`exported` | `absent`).
 
 ## Entity
 
