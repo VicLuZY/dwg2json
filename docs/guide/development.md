@@ -41,7 +41,7 @@ On some Linux distributions the `libredwg-utils` package is unavailable or outda
 
 ## Bulk test drawings (optional)
 
-Never commit downloaded `.dwg` files. From the **monorepo root**:
+Never commit downloaded `.dwg` files. From the **repository root**:
 
 ```bash
 python scripts/fetch_libredwg_test_dwgs.py --dest local_dwg_samples
