@@ -16,3 +16,6 @@ build/
 *.egg
 .coverage
 htmlcov/
+node_modules/
+docs/.vitepress/dist/
+docs/.vitepress/cache/

@@ -1,0 +1,402 @@
+{
+  "completeness": {
+    "consumer_caution": "Geometry-dependent semantics may be incomplete because one or more xrefs were missing, unresolved, or failed to parse.",
+    "cycle_blocked_count": 0,
+    "failed_sources_count": 0,
+    "missing_xrefs_count": 0,
+    "notes": [
+      "One or more xref dependencies were not fully available during parse."
+    ],
+    "status": "partial",
+    "unresolved_xrefs_count": 1,
+    "unsupported_entity_types": []
+  },
+  "compositions": [
+    {
+      "bbox": null,
+      "completeness_status": "missing_dependencies",
+      "entity_refs": [
+        "src-a-e1",
+        "src-b-e1"
+      ],
+      "id": "composition-src-a",
+      "layout_name": "Model",
+      "missing_source_ids": [
+        "src-a__xref_0_b__xref_0_a"
+      ],
+      "name": "Composed context for /tmp/tmpm_ubiss_/a.dwg",
+      "notes": [
+        "One or more bound xref dependencies were missing or unresolved. Geometric interpretation is partial."
+      ],
+      "relation_refs": [],
+      "root_source_id": "src-a",
+      "source_bindings": [
+        {
+          "included_entity_ids": [
+            "src-a-e1"
+          ],
+          "inherited_transform_chain": [],
+          "missing_dependency": false,
+          "mode": "unknown",
+          "parent_source_id": null,
+          "placement_transform": null,
+          "source_id": "src-a"
+        },
+        {
+          "included_entity_ids": [
+            "src-b-e1"
+          ],
+          "inherited_transform_chain": [],
+          "missing_dependency": false,
+          "mode": "unknown",
+          "parent_source_id": "src-a",
+          "placement_transform": null,
+          "source_id": "src-a__xref_0_b"
+        },
+        {
+          "included_entity_ids": [],
+          "inherited_transform_chain": [],
+          "missing_dependency": true,
+          "mode": "unknown",
+          "parent_source_id": "src-a__xref_0_b",
+          "placement_transform": null,
+          "source_id": "src-a__xref_0_b__xref_0_a"
+        }
+      ]
+    }
+  ],
+  "interpretation_confidence": {
+    "explanation": "Moderate confidence: some dependencies missing or partially parsed.",
+    "factors": [
+      {
+        "detail": "Cycle-blocked xref: a.dwg",
+        "factor": "cycle_blocked_xref",
+        "penalty": 0.1
+      },
+      {
+        "detail": "1 backend warning(s)",
+        "factor": "backend_warnings",
+        "penalty": 0.01
+      }
+    ],
+    "value": 0.89
+  },
+  "interpretation_status": "partial",
+  "metadata": {
+    "parser_options": {
+      "backend": "auto",
+      "bind_xrefs": true,
+      "indent": 2,
+      "keep_raw_payloads": true,
+      "max_xref_depth": 8,
+      "missing_xref_policy": "record",
+      "out_dir": "examples/golden",
+      "resolve_xrefs": true,
+      "xref_search_roots": []
+    }
+  },
+  "missing_references": [],
+  "parser": {
+    "backend": "fake",
+    "backend_version": "test",
+    "name": "dwg2json",
+    "timestamp": "2026-04-08T04:57:47.854826+00:00",
+    "version": "0.1.0"
+  },
+  "root_source_id": "src-a",
+  "schema_version": "0.1.0",
+  "sources": [
+    {
+      "blocks": [],
+      "entities": [
+        {
+          "attributes": {},
+          "bbox": null,
+          "block_name": null,
+          "color_index": null,
+          "composed_transform": null,
+          "geometry": {},
+          "handle": "10",
+          "id": "src-a-e1",
+          "insert_point": null,
+          "is_visible": true,
+          "layer": null,
+          "layout": null,
+          "line_type": null,
+          "line_weight": null,
+          "owner_handle": null,
+          "raw": {},
+          "rotation": null,
+          "scale": null,
+          "source_id": "src-a",
+          "tags": [],
+          "text": null,
+          "transform": null,
+          "type": "LINE",
+          "warnings": [],
+          "xdata": {}
+        }
+      ],
+      "exists": true,
+      "id": "src-a",
+      "layers": [
+        {
+          "color_index": null,
+          "color_rgb": null,
+          "id": "src-a__layer_0",
+          "is_frozen": false,
+          "is_locked": false,
+          "is_off": false,
+          "line_type": null,
+          "line_weight": null,
+          "metadata": {},
+          "name": "0",
+          "plot_style_name": null
+        }
+      ],
+      "layouts": [
+        {
+          "id": "src-a__model",
+          "is_model_space": true,
+          "metadata": {},
+          "name": "Model",
+          "tab_order": 0
+        }
+      ],
+      "metadata": {
+        "raw_xrefs": [
+          {
+            "path": "b.dwg"
+          }
+        ]
+      },
+      "parent_source_id": null,
+      "parse_status": "parsed",
+      "parsed": true,
+      "path": "/tmp/tmpm_ubiss_/a.dwg",
+      "raw_summary": null,
+      "resolved_path": "/tmp/tmpm_ubiss_/a.dwg",
+      "role": "root",
+      "warnings": [
+        {
+          "code": "fake",
+          "handle": null,
+          "message": "fake backend",
+          "severity": "info",
+          "source_id": "src-a"
+        }
+      ],
+      "xref_binding": null
+    },
+    {
+      "blocks": [],
+      "entities": [],
+      "exists": true,
+      "id": "src-a__xref_0_b__xref_0_a",
+      "layers": [],
+      "layouts": [],
+      "metadata": {},
+      "parent_source_id": "src-a__xref_0_b",
+      "parse_status": "unresolved",
+      "parsed": false,
+      "path": "a.dwg",
+      "raw_summary": null,
+      "resolved_path": "/tmp/tmpm_ubiss_/a.dwg",
+      "role": "xref",
+      "warnings": [
+        {
+          "code": "xref-cycle",
+          "handle": null,
+          "message": "Cycle detected for /tmp/tmpm_ubiss_/a.dwg: already visited.",
+          "severity": "warning",
+          "source_id": "src-a__xref_0_b__xref_0_a"
+        }
+      ],
+      "xref_binding": {
+        "candidate_paths": [],
+        "exists": true,
+        "insertion_point": null,
+        "missing_reason": "Recursive xref loop detected. Reference expansion stopped safely.",
+        "mode": "unknown",
+        "parsed": false,
+        "resolved_path": "/tmp/tmpm_ubiss_/a.dwg",
+        "rotation": null,
+        "saved_path": "a.dwg",
+        "scale": null,
+        "transform": null
+      }
+    },
+    {
+      "blocks": [],
+      "entities": [
+        {
+          "attributes": {},
+          "bbox": null,
+          "block_name": null,
+          "color_index": null,
+          "composed_transform": null,
+          "geometry": {},
+          "handle": "10",
+          "id": "src-b-e1",
+          "insert_point": null,
+          "is_visible": true,
+          "layer": null,
+          "layout": null,
+          "line_type": null,
+          "line_weight": null,
+          "owner_handle": null,
+          "raw": {},
+          "rotation": null,
+          "scale": null,
+          "source_id": "src-b",
+          "tags": [],
+          "text": null,
+          "transform": null,
+          "type": "LINE",
+          "warnings": [],
+          "xdata": {}
+        }
+      ],
+      "exists": true,
+      "id": "src-a__xref_0_b",
+      "layers": [
+        {
+          "color_index": null,
+          "color_rgb": null,
+          "id": "src-b__layer_0",
+          "is_frozen": false,
+          "is_locked": false,
+          "is_off": false,
+          "line_type": null,
+          "line_weight": null,
+          "metadata": {},
+          "name": "0",
+          "plot_style_name": null
+        }
+      ],
+      "layouts": [
+        {
+          "id": "src-b__model",
+          "is_model_space": true,
+          "metadata": {},
+          "name": "Model",
+          "tab_order": 0
+        }
+      ],
+      "metadata": {
+        "raw_xrefs": [
+          {
+            "path": "a.dwg"
+          }
+        ]
+      },
+      "parent_source_id": "src-a",
+      "parse_status": "parsed",
+      "parsed": true,
+      "path": "/tmp/tmpm_ubiss_/b.dwg",
+      "raw_summary": null,
+      "resolved_path": "/tmp/tmpm_ubiss_/b.dwg",
+      "role": "xref",
+      "warnings": [
+        {
+          "code": "fake",
+          "handle": null,
+          "message": "fake backend",
+          "severity": "info",
+          "source_id": "src-b"
+        }
+      ],
+      "xref_binding": {
+        "candidate_paths": [
+          "/tmp/tmpm_ubiss_/b.dwg"
+        ],
+        "exists": true,
+        "insertion_point": null,
+        "missing_reason": null,
+        "mode": "unknown",
+        "parsed": true,
+        "resolved_path": "/tmp/tmpm_ubiss_/b.dwg",
+        "rotation": null,
+        "saved_path": "b.dwg",
+        "scale": null,
+        "transform": null
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "code": "fake",
+      "handle": null,
+      "message": "fake backend",
+      "severity": "info",
+      "source_id": "src-a"
+    },
+    {
+      "code": "xref-cycle",
+      "handle": null,
+      "message": "Recursive xref loop detected while resolving /tmp/tmpm_ubiss_/a.dwg. Reference expansion stopped safely.",
+      "severity": "warning",
+      "source_id": "src-a__xref_0_b"
+    }
+  ],
+  "xref_graph": {
+    "edges": [
+      {
+        "composition_required": true,
+        "exists": true,
+        "host_source_id": "src-a",
+        "insertion_point": null,
+        "mode": "unknown",
+        "parsed": true,
+        "resolved_path": "/tmp/tmpm_ubiss_/b.dwg",
+        "saved_path": "b.dwg",
+        "target_source_id": "src-a__xref_0_b",
+        "transform": null
+      },
+      {
+        "composition_required": true,
+        "exists": true,
+        "host_source_id": "src-a__xref_0_b",
+        "insertion_point": null,
+        "mode": "unknown",
+        "parsed": false,
+        "resolved_path": "/tmp/tmpm_ubiss_/a.dwg",
+        "saved_path": "a.dwg",
+        "target_source_id": "src-a__xref_0_b__xref_0_a",
+        "transform": null
+      }
+    ],
+    "nodes": [
+      {
+        "depth": 0,
+        "exists": true,
+        "parent_source_id": null,
+        "parse_status": "parsed",
+        "parsed": true,
+        "path": "/tmp/tmpm_ubiss_/a.dwg",
+        "resolved_path": "/tmp/tmpm_ubiss_/a.dwg",
+        "source_id": "src-a"
+      },
+      {
+        "depth": 1,
+        "exists": true,
+        "parent_source_id": "src-a",
+        "parse_status": "parsed",
+        "parsed": true,
+        "path": "b.dwg",
+        "resolved_path": "/tmp/tmpm_ubiss_/b.dwg",
+        "source_id": "src-a__xref_0_b"
+      },
+      {
+        "depth": 2,
+        "exists": true,
+        "parent_source_id": "src-a__xref_0_b",
+        "parse_status": "unresolved",
+        "parsed": false,
+        "path": "a.dwg",
+        "resolved_path": "/tmp/tmpm_ubiss_/a.dwg",
+        "source_id": "src-a__xref_0_b__xref_0_a"
+      }
+    ]
+  }
+}

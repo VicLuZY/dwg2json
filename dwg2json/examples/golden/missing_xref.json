@@ -1,0 +1,287 @@
+{
+  "completeness": {
+    "consumer_caution": "Geometry-dependent semantics may be incomplete because one or more xrefs were missing, unresolved, or failed to parse.",
+    "cycle_blocked_count": 0,
+    "failed_sources_count": 0,
+    "missing_xrefs_count": 1,
+    "notes": [
+      "One or more xref dependencies were not fully available during parse."
+    ],
+    "status": "partial",
+    "unresolved_xrefs_count": 0,
+    "unsupported_entity_types": []
+  },
+  "compositions": [
+    {
+      "bbox": null,
+      "completeness_status": "missing_dependencies",
+      "entity_refs": [
+        "src-device-e1"
+      ],
+      "id": "composition-src-device",
+      "layout_name": "Model",
+      "missing_source_ids": [
+        "src-device__xref_0_floor_plan"
+      ],
+      "name": "Composed context for /tmp/tmpm_ubiss_/device.dwg",
+      "notes": [
+        "One or more bound xref dependencies were missing or unresolved. Geometric interpretation is partial."
+      ],
+      "relation_refs": [],
+      "root_source_id": "src-device",
+      "source_bindings": [
+        {
+          "included_entity_ids": [
+            "src-device-e1"
+          ],
+          "inherited_transform_chain": [],
+          "missing_dependency": false,
+          "mode": "unknown",
+          "parent_source_id": null,
+          "placement_transform": null,
+          "source_id": "src-device"
+        },
+        {
+          "included_entity_ids": [],
+          "inherited_transform_chain": [],
+          "missing_dependency": true,
+          "mode": "overlay",
+          "parent_source_id": "src-device",
+          "placement_transform": null,
+          "source_id": "src-device__xref_0_floor_plan"
+        }
+      ]
+    }
+  ],
+  "interpretation_confidence": {
+    "explanation": "Moderate confidence: some dependencies missing or partially parsed.",
+    "factors": [
+      {
+        "detail": "Missing xref: floor_plan.dwg",
+        "factor": "missing_xref",
+        "penalty": 0.15
+      },
+      {
+        "detail": "1 backend warning(s)",
+        "factor": "backend_warnings",
+        "penalty": 0.01
+      }
+    ],
+    "value": 0.84
+  },
+  "interpretation_status": "partial",
+  "metadata": {
+    "parser_options": {
+      "backend": "auto",
+      "bind_xrefs": true,
+      "indent": 2,
+      "keep_raw_payloads": true,
+      "max_xref_depth": 8,
+      "missing_xref_policy": "record",
+      "out_dir": "examples/golden",
+      "resolve_xrefs": true,
+      "xref_search_roots": []
+    }
+  },
+  "missing_references": [
+    {
+      "host_handles": [],
+      "impact_summary": "Missing xref prevented full composite interpretation of overlay geometry.",
+      "interpretation_impacted": true,
+      "kind": "xref",
+      "normalized_path": "floor_plan.dwg",
+      "parent_document_id": "src-device",
+      "requested_path": "floor_plan.dwg",
+      "resolver_root": "/tmp/tmpm_ubiss_",
+      "severity": "high"
+    }
+  ],
+  "parser": {
+    "backend": "fake",
+    "backend_version": "test",
+    "name": "dwg2json",
+    "timestamp": "2026-04-08T04:57:47.854244+00:00",
+    "version": "0.1.0"
+  },
+  "root_source_id": "src-device",
+  "schema_version": "0.1.0",
+  "sources": [
+    {
+      "blocks": [],
+      "entities": [
+        {
+          "attributes": {},
+          "bbox": null,
+          "block_name": null,
+          "color_index": null,
+          "composed_transform": null,
+          "geometry": {},
+          "handle": "10",
+          "id": "src-device-e1",
+          "insert_point": null,
+          "is_visible": true,
+          "layer": null,
+          "layout": null,
+          "line_type": null,
+          "line_weight": null,
+          "owner_handle": null,
+          "raw": {},
+          "rotation": null,
+          "scale": null,
+          "source_id": "src-device",
+          "tags": [],
+          "text": null,
+          "transform": null,
+          "type": "LINE",
+          "warnings": [],
+          "xdata": {}
+        }
+      ],
+      "exists": true,
+      "id": "src-device",
+      "layers": [
+        {
+          "color_index": null,
+          "color_rgb": null,
+          "id": "src-device__layer_0",
+          "is_frozen": false,
+          "is_locked": false,
+          "is_off": false,
+          "line_type": null,
+          "line_weight": null,
+          "metadata": {},
+          "name": "0",
+          "plot_style_name": null
+        }
+      ],
+      "layouts": [
+        {
+          "id": "src-device__model",
+          "is_model_space": true,
+          "metadata": {},
+          "name": "Model",
+          "tab_order": 0
+        }
+      ],
+      "metadata": {
+        "raw_xrefs": [
+          {
+            "mode": "overlay",
+            "path": "floor_plan.dwg"
+          }
+        ]
+      },
+      "parent_source_id": null,
+      "parse_status": "parsed",
+      "parsed": true,
+      "path": "/tmp/tmpm_ubiss_/device.dwg",
+      "raw_summary": null,
+      "resolved_path": "/tmp/tmpm_ubiss_/device.dwg",
+      "role": "root",
+      "warnings": [
+        {
+          "code": "fake",
+          "handle": null,
+          "message": "fake backend",
+          "severity": "info",
+          "source_id": "src-device"
+        }
+      ],
+      "xref_binding": null
+    },
+    {
+      "blocks": [],
+      "entities": [],
+      "exists": false,
+      "id": "src-device__xref_0_floor_plan",
+      "layers": [],
+      "layouts": [],
+      "metadata": {},
+      "parent_source_id": "src-device",
+      "parse_status": "missing",
+      "parsed": false,
+      "path": "floor_plan.dwg",
+      "raw_summary": null,
+      "resolved_path": null,
+      "role": "xref",
+      "warnings": [
+        {
+          "code": "xref-missing",
+          "handle": null,
+          "message": "Missing xref dependency: floor_plan.dwg",
+          "severity": "warning",
+          "source_id": "src-device__xref_0_floor_plan"
+        }
+      ],
+      "xref_binding": {
+        "candidate_paths": [
+          "/tmp/tmpm_ubiss_/floor_plan.dwg"
+        ],
+        "exists": false,
+        "insertion_point": null,
+        "missing_reason": "Xref target not found on any candidate path.",
+        "mode": "overlay",
+        "parsed": false,
+        "resolved_path": null,
+        "rotation": null,
+        "saved_path": "floor_plan.dwg",
+        "scale": null,
+        "transform": null
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "code": "fake",
+      "handle": null,
+      "message": "fake backend",
+      "severity": "info",
+      "source_id": "src-device"
+    },
+    {
+      "code": "xref-missing",
+      "handle": null,
+      "message": "Missing xref dependency prevents full composition: floor_plan.dwg. Referenced background drawing was unavailable. Spatial relationships may be incomplete.",
+      "severity": "warning",
+      "source_id": "src-device"
+    }
+  ],
+  "xref_graph": {
+    "edges": [
+      {
+        "composition_required": true,
+        "exists": false,
+        "host_source_id": "src-device",
+        "insertion_point": null,
+        "mode": "overlay",
+        "parsed": false,
+        "resolved_path": null,
+        "saved_path": "floor_plan.dwg",
+        "target_source_id": "src-device__xref_0_floor_plan",
+        "transform": null
+      }
+    ],
+    "nodes": [
+      {
+        "depth": 0,
+        "exists": true,
+        "parent_source_id": null,
+        "parse_status": "parsed",
+        "parsed": true,
+        "path": "/tmp/tmpm_ubiss_/device.dwg",
+        "resolved_path": "/tmp/tmpm_ubiss_/device.dwg",
+        "source_id": "src-device"
+      },
+      {
+        "depth": 1,
+        "exists": false,
+        "parent_source_id": "src-device",
+        "parse_status": "missing",
+        "parsed": false,
+        "path": "floor_plan.dwg",
+        "resolved_path": null,
+        "source_id": "src-device__xref_0_floor_plan"
+      }
+    ]
+  }
+}

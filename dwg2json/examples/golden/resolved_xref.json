@@ -1,0 +1,395 @@
+{
+  "completeness": {
+    "consumer_caution": null,
+    "cycle_blocked_count": 0,
+    "failed_sources_count": 0,
+    "missing_xrefs_count": 0,
+    "notes": [],
+    "status": "complete",
+    "unresolved_xrefs_count": 0,
+    "unsupported_entity_types": []
+  },
+  "compositions": [
+    {
+      "bbox": null,
+      "completeness_status": "complete",
+      "entity_refs": [
+        "src-bg-e1",
+        "src-host-e1"
+      ],
+      "id": "composition-src-host",
+      "layout_name": "Model",
+      "missing_source_ids": [],
+      "name": "Composed context for /tmp/tmpm_ubiss_/host.dwg",
+      "notes": [],
+      "relation_refs": [],
+      "root_source_id": "src-host",
+      "source_bindings": [
+        {
+          "included_entity_ids": [
+            "src-host-e1"
+          ],
+          "inherited_transform_chain": [],
+          "missing_dependency": false,
+          "mode": "unknown",
+          "parent_source_id": null,
+          "placement_transform": null,
+          "source_id": "src-host"
+        },
+        {
+          "included_entity_ids": [
+            "src-bg-e1"
+          ],
+          "inherited_transform_chain": [
+            [
+              [
+                1.0,
+                0.0,
+                100.0
+              ],
+              [
+                0.0,
+                1.0,
+                200.0
+              ],
+              [
+                0.0,
+                0.0,
+                1.0
+              ]
+            ]
+          ],
+          "missing_dependency": false,
+          "mode": "attach",
+          "parent_source_id": "src-host",
+          "placement_transform": [
+            [
+              1.0,
+              0.0,
+              100.0
+            ],
+            [
+              0.0,
+              1.0,
+              200.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "source_id": "src-host__xref_0_bg"
+        }
+      ]
+    }
+  ],
+  "interpretation_confidence": {
+    "explanation": "High confidence: all dependencies resolved.",
+    "factors": [
+      {
+        "detail": "1 backend warning(s)",
+        "factor": "backend_warnings",
+        "penalty": 0.01
+      }
+    ],
+    "value": 0.99
+  },
+  "interpretation_status": "complete",
+  "metadata": {
+    "parser_options": {
+      "backend": "auto",
+      "bind_xrefs": true,
+      "indent": 2,
+      "keep_raw_payloads": true,
+      "max_xref_depth": 8,
+      "missing_xref_policy": "record",
+      "out_dir": "examples/golden",
+      "resolve_xrefs": true,
+      "xref_search_roots": []
+    }
+  },
+  "missing_references": [],
+  "parser": {
+    "backend": "fake",
+    "backend_version": "test",
+    "name": "dwg2json",
+    "timestamp": "2026-04-08T04:57:47.853542+00:00",
+    "version": "0.1.0"
+  },
+  "root_source_id": "src-host",
+  "schema_version": "0.1.0",
+  "sources": [
+    {
+      "blocks": [],
+      "entities": [
+        {
+          "attributes": {},
+          "bbox": null,
+          "block_name": null,
+          "color_index": null,
+          "composed_transform": null,
+          "geometry": {},
+          "handle": "10",
+          "id": "src-host-e1",
+          "insert_point": null,
+          "is_visible": true,
+          "layer": null,
+          "layout": null,
+          "line_type": null,
+          "line_weight": null,
+          "owner_handle": null,
+          "raw": {},
+          "rotation": null,
+          "scale": null,
+          "source_id": "src-host",
+          "tags": [],
+          "text": null,
+          "transform": null,
+          "type": "LINE",
+          "warnings": [],
+          "xdata": {}
+        }
+      ],
+      "exists": true,
+      "id": "src-host",
+      "layers": [
+        {
+          "color_index": null,
+          "color_rgb": null,
+          "id": "src-host__layer_0",
+          "is_frozen": false,
+          "is_locked": false,
+          "is_off": false,
+          "line_type": null,
+          "line_weight": null,
+          "metadata": {},
+          "name": "0",
+          "plot_style_name": null
+        }
+      ],
+      "layouts": [
+        {
+          "id": "src-host__model",
+          "is_model_space": true,
+          "metadata": {},
+          "name": "Model",
+          "tab_order": 0
+        }
+      ],
+      "metadata": {
+        "raw_xrefs": [
+          {
+            "mode": "attach",
+            "path": "bg.dwg",
+            "transform": [
+              [
+                1,
+                0,
+                100
+              ],
+              [
+                0,
+                1,
+                200
+              ],
+              [
+                0,
+                0,
+                1
+              ]
+            ]
+          }
+        ]
+      },
+      "parent_source_id": null,
+      "parse_status": "parsed",
+      "parsed": true,
+      "path": "/tmp/tmpm_ubiss_/host.dwg",
+      "raw_summary": null,
+      "resolved_path": "/tmp/tmpm_ubiss_/host.dwg",
+      "role": "root",
+      "warnings": [
+        {
+          "code": "fake",
+          "handle": null,
+          "message": "fake backend",
+          "severity": "info",
+          "source_id": "src-host"
+        }
+      ],
+      "xref_binding": null
+    },
+    {
+      "blocks": [],
+      "entities": [
+        {
+          "attributes": {},
+          "bbox": null,
+          "block_name": null,
+          "color_index": null,
+          "composed_transform": null,
+          "geometry": {},
+          "handle": "10",
+          "id": "src-bg-e1",
+          "insert_point": null,
+          "is_visible": true,
+          "layer": null,
+          "layout": null,
+          "line_type": null,
+          "line_weight": null,
+          "owner_handle": null,
+          "raw": {},
+          "rotation": null,
+          "scale": null,
+          "source_id": "src-bg",
+          "tags": [],
+          "text": null,
+          "transform": null,
+          "type": "LINE",
+          "warnings": [],
+          "xdata": {}
+        }
+      ],
+      "exists": true,
+      "id": "src-host__xref_0_bg",
+      "layers": [
+        {
+          "color_index": null,
+          "color_rgb": null,
+          "id": "src-bg__layer_0",
+          "is_frozen": false,
+          "is_locked": false,
+          "is_off": false,
+          "line_type": null,
+          "line_weight": null,
+          "metadata": {},
+          "name": "0",
+          "plot_style_name": null
+        }
+      ],
+      "layouts": [
+        {
+          "id": "src-bg__model",
+          "is_model_space": true,
+          "metadata": {},
+          "name": "Model",
+          "tab_order": 0
+        }
+      ],
+      "metadata": {
+        "raw_xrefs": []
+      },
+      "parent_source_id": "src-host",
+      "parse_status": "parsed",
+      "parsed": true,
+      "path": "/tmp/tmpm_ubiss_/bg.dwg",
+      "raw_summary": null,
+      "resolved_path": "/tmp/tmpm_ubiss_/bg.dwg",
+      "role": "xref",
+      "warnings": [
+        {
+          "code": "fake",
+          "handle": null,
+          "message": "fake backend",
+          "severity": "info",
+          "source_id": "src-bg"
+        }
+      ],
+      "xref_binding": {
+        "candidate_paths": [
+          "/tmp/tmpm_ubiss_/bg.dwg"
+        ],
+        "exists": true,
+        "insertion_point": null,
+        "missing_reason": null,
+        "mode": "attach",
+        "parsed": true,
+        "resolved_path": "/tmp/tmpm_ubiss_/bg.dwg",
+        "rotation": null,
+        "saved_path": "bg.dwg",
+        "scale": null,
+        "transform": [
+          [
+            1.0,
+            0.0,
+            100.0
+          ],
+          [
+            0.0,
+            1.0,
+            200.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ]
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "code": "fake",
+      "handle": null,
+      "message": "fake backend",
+      "severity": "info",
+      "source_id": "src-host"
+    }
+  ],
+  "xref_graph": {
+    "edges": [
+      {
+        "composition_required": true,
+        "exists": true,
+        "host_source_id": "src-host",
+        "insertion_point": null,
+        "mode": "attach",
+        "parsed": true,
+        "resolved_path": "/tmp/tmpm_ubiss_/bg.dwg",
+        "saved_path": "bg.dwg",
+        "target_source_id": "src-host__xref_0_bg",
+        "transform": [
+          [
+            1.0,
+            0.0,
+            100.0
+          ],
+          [
+            0.0,
+            1.0,
+            200.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ]
+      }
+    ],
+    "nodes": [
+      {
+        "depth": 0,
+        "exists": true,
+        "parent_source_id": null,
+        "parse_status": "parsed",
+        "parsed": true,
+        "path": "/tmp/tmpm_ubiss_/host.dwg",
+        "resolved_path": "/tmp/tmpm_ubiss_/host.dwg",
+        "source_id": "src-host"
+      },
+      {
+        "depth": 1,
+        "exists": true,
+        "parent_source_id": "src-host",
+        "parse_status": "parsed",
+        "parsed": true,
+        "path": "bg.dwg",
+        "resolved_path": "/tmp/tmpm_ubiss_/bg.dwg",
+        "source_id": "src-host__xref_0_bg"
+      }
+    ]
+  }
+}

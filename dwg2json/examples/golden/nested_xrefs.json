@@ -1,0 +1,626 @@
+{
+  "completeness": {
+    "consumer_caution": null,
+    "cycle_blocked_count": 0,
+    "failed_sources_count": 0,
+    "missing_xrefs_count": 0,
+    "notes": [],
+    "status": "complete",
+    "unresolved_xrefs_count": 0,
+    "unsupported_entity_types": []
+  },
+  "compositions": [
+    {
+      "bbox": null,
+      "completeness_status": "complete",
+      "entity_refs": [
+        "src-leaf-e1",
+        "src-mid-e1",
+        "src-root-e1"
+      ],
+      "id": "composition-src-root",
+      "layout_name": "Model",
+      "missing_source_ids": [],
+      "name": "Composed context for /tmp/tmpm_ubiss_/root.dwg",
+      "notes": [],
+      "relation_refs": [],
+      "root_source_id": "src-root",
+      "source_bindings": [
+        {
+          "included_entity_ids": [
+            "src-root-e1"
+          ],
+          "inherited_transform_chain": [],
+          "missing_dependency": false,
+          "mode": "unknown",
+          "parent_source_id": null,
+          "placement_transform": null,
+          "source_id": "src-root"
+        },
+        {
+          "included_entity_ids": [
+            "src-mid-e1"
+          ],
+          "inherited_transform_chain": [
+            [
+              [
+                1.0,
+                0.0,
+                50.0
+              ],
+              [
+                0.0,
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                1.0
+              ]
+            ]
+          ],
+          "missing_dependency": false,
+          "mode": "attach",
+          "parent_source_id": "src-root",
+          "placement_transform": [
+            [
+              1.0,
+              0.0,
+              50.0
+            ],
+            [
+              0.0,
+              1.0,
+              0.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "source_id": "src-root__xref_0_mid"
+        },
+        {
+          "included_entity_ids": [
+            "src-leaf-e1"
+          ],
+          "inherited_transform_chain": [
+            [
+              [
+                1.0,
+                0.0,
+                50.0
+              ],
+              [
+                0.0,
+                1.0,
+                0.0
+              ],
+              [
+                0.0,
+                0.0,
+                1.0
+              ]
+            ],
+            [
+              [
+                1.0,
+                0.0,
+                0.0
+              ],
+              [
+                0.0,
+                1.0,
+                75.0
+              ],
+              [
+                0.0,
+                0.0,
+                1.0
+              ]
+            ]
+          ],
+          "missing_dependency": false,
+          "mode": "attach",
+          "parent_source_id": "src-root__xref_0_mid",
+          "placement_transform": [
+            [
+              1.0,
+              0.0,
+              0.0
+            ],
+            [
+              0.0,
+              1.0,
+              75.0
+            ],
+            [
+              0.0,
+              0.0,
+              1.0
+            ]
+          ],
+          "source_id": "src-root__xref_0_mid__xref_0_leaf"
+        }
+      ]
+    }
+  ],
+  "interpretation_confidence": {
+    "explanation": "High confidence: all dependencies resolved.",
+    "factors": [
+      {
+        "detail": "1 backend warning(s)",
+        "factor": "backend_warnings",
+        "penalty": 0.01
+      }
+    ],
+    "value": 0.99
+  },
+  "interpretation_status": "complete",
+  "metadata": {
+    "parser_options": {
+      "backend": "auto",
+      "bind_xrefs": true,
+      "indent": 2,
+      "keep_raw_payloads": true,
+      "max_xref_depth": 8,
+      "missing_xref_policy": "record",
+      "out_dir": "examples/golden",
+      "resolve_xrefs": true,
+      "xref_search_roots": []
+    }
+  },
+  "missing_references": [],
+  "parser": {
+    "backend": "fake",
+    "backend_version": "test",
+    "name": "dwg2json",
+    "timestamp": "2026-04-08T04:57:47.855629+00:00",
+    "version": "0.1.0"
+  },
+  "root_source_id": "src-root",
+  "schema_version": "0.1.0",
+  "sources": [
+    {
+      "blocks": [],
+      "entities": [
+        {
+          "attributes": {},
+          "bbox": null,
+          "block_name": null,
+          "color_index": null,
+          "composed_transform": null,
+          "geometry": {},
+          "handle": "10",
+          "id": "src-root-e1",
+          "insert_point": null,
+          "is_visible": true,
+          "layer": null,
+          "layout": null,
+          "line_type": null,
+          "line_weight": null,
+          "owner_handle": null,
+          "raw": {},
+          "rotation": null,
+          "scale": null,
+          "source_id": "src-root",
+          "tags": [],
+          "text": null,
+          "transform": null,
+          "type": "LINE",
+          "warnings": [],
+          "xdata": {}
+        }
+      ],
+      "exists": true,
+      "id": "src-root",
+      "layers": [
+        {
+          "color_index": null,
+          "color_rgb": null,
+          "id": "src-root__layer_0",
+          "is_frozen": false,
+          "is_locked": false,
+          "is_off": false,
+          "line_type": null,
+          "line_weight": null,
+          "metadata": {},
+          "name": "0",
+          "plot_style_name": null
+        }
+      ],
+      "layouts": [
+        {
+          "id": "src-root__model",
+          "is_model_space": true,
+          "metadata": {},
+          "name": "Model",
+          "tab_order": 0
+        }
+      ],
+      "metadata": {
+        "raw_xrefs": [
+          {
+            "mode": "attach",
+            "path": "mid.dwg",
+            "transform": [
+              [
+                1,
+                0,
+                50
+              ],
+              [
+                0,
+                1,
+                0
+              ],
+              [
+                0,
+                0,
+                1
+              ]
+            ]
+          }
+        ]
+      },
+      "parent_source_id": null,
+      "parse_status": "parsed",
+      "parsed": true,
+      "path": "/tmp/tmpm_ubiss_/root.dwg",
+      "raw_summary": null,
+      "resolved_path": "/tmp/tmpm_ubiss_/root.dwg",
+      "role": "root",
+      "warnings": [
+        {
+          "code": "fake",
+          "handle": null,
+          "message": "fake backend",
+          "severity": "info",
+          "source_id": "src-root"
+        }
+      ],
+      "xref_binding": null
+    },
+    {
+      "blocks": [],
+      "entities": [
+        {
+          "attributes": {},
+          "bbox": null,
+          "block_name": null,
+          "color_index": null,
+          "composed_transform": null,
+          "geometry": {},
+          "handle": "10",
+          "id": "src-leaf-e1",
+          "insert_point": null,
+          "is_visible": true,
+          "layer": null,
+          "layout": null,
+          "line_type": null,
+          "line_weight": null,
+          "owner_handle": null,
+          "raw": {},
+          "rotation": null,
+          "scale": null,
+          "source_id": "src-leaf",
+          "tags": [],
+          "text": null,
+          "transform": null,
+          "type": "LINE",
+          "warnings": [],
+          "xdata": {}
+        }
+      ],
+      "exists": true,
+      "id": "src-root__xref_0_mid__xref_0_leaf",
+      "layers": [
+        {
+          "color_index": null,
+          "color_rgb": null,
+          "id": "src-leaf__layer_0",
+          "is_frozen": false,
+          "is_locked": false,
+          "is_off": false,
+          "line_type": null,
+          "line_weight": null,
+          "metadata": {},
+          "name": "0",
+          "plot_style_name": null
+        }
+      ],
+      "layouts": [
+        {
+          "id": "src-leaf__model",
+          "is_model_space": true,
+          "metadata": {},
+          "name": "Model",
+          "tab_order": 0
+        }
+      ],
+      "metadata": {
+        "raw_xrefs": []
+      },
+      "parent_source_id": "src-root__xref_0_mid",
+      "parse_status": "parsed",
+      "parsed": true,
+      "path": "/tmp/tmpm_ubiss_/leaf.dwg",
+      "raw_summary": null,
+      "resolved_path": "/tmp/tmpm_ubiss_/leaf.dwg",
+      "role": "xref",
+      "warnings": [
+        {
+          "code": "fake",
+          "handle": null,
+          "message": "fake backend",
+          "severity": "info",
+          "source_id": "src-leaf"
+        }
+      ],
+      "xref_binding": {
+        "candidate_paths": [
+          "/tmp/tmpm_ubiss_/leaf.dwg"
+        ],
+        "exists": true,
+        "insertion_point": null,
+        "missing_reason": null,
+        "mode": "attach",
+        "parsed": true,
+        "resolved_path": "/tmp/tmpm_ubiss_/leaf.dwg",
+        "rotation": null,
+        "saved_path": "leaf.dwg",
+        "scale": null,
+        "transform": [
+          [
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            75.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ]
+      }
+    },
+    {
+      "blocks": [],
+      "entities": [
+        {
+          "attributes": {},
+          "bbox": null,
+          "block_name": null,
+          "color_index": null,
+          "composed_transform": null,
+          "geometry": {},
+          "handle": "10",
+          "id": "src-mid-e1",
+          "insert_point": null,
+          "is_visible": true,
+          "layer": null,
+          "layout": null,
+          "line_type": null,
+          "line_weight": null,
+          "owner_handle": null,
+          "raw": {},
+          "rotation": null,
+          "scale": null,
+          "source_id": "src-mid",
+          "tags": [],
+          "text": null,
+          "transform": null,
+          "type": "LINE",
+          "warnings": [],
+          "xdata": {}
+        }
+      ],
+      "exists": true,
+      "id": "src-root__xref_0_mid",
+      "layers": [
+        {
+          "color_index": null,
+          "color_rgb": null,
+          "id": "src-mid__layer_0",
+          "is_frozen": false,
+          "is_locked": false,
+          "is_off": false,
+          "line_type": null,
+          "line_weight": null,
+          "metadata": {},
+          "name": "0",
+          "plot_style_name": null
+        }
+      ],
+      "layouts": [
+        {
+          "id": "src-mid__model",
+          "is_model_space": true,
+          "metadata": {},
+          "name": "Model",
+          "tab_order": 0
+        }
+      ],
+      "metadata": {
+        "raw_xrefs": [
+          {
+            "mode": "attach",
+            "path": "leaf.dwg",
+            "transform": [
+              [
+                1,
+                0,
+                0
+              ],
+              [
+                0,
+                1,
+                75
+              ],
+              [
+                0,
+                0,
+                1
+              ]
+            ]
+          }
+        ]
+      },
+      "parent_source_id": "src-root",
+      "parse_status": "parsed",
+      "parsed": true,
+      "path": "/tmp/tmpm_ubiss_/mid.dwg",
+      "raw_summary": null,
+      "resolved_path": "/tmp/tmpm_ubiss_/mid.dwg",
+      "role": "xref",
+      "warnings": [
+        {
+          "code": "fake",
+          "handle": null,
+          "message": "fake backend",
+          "severity": "info",
+          "source_id": "src-mid"
+        }
+      ],
+      "xref_binding": {
+        "candidate_paths": [
+          "/tmp/tmpm_ubiss_/mid.dwg"
+        ],
+        "exists": true,
+        "insertion_point": null,
+        "missing_reason": null,
+        "mode": "attach",
+        "parsed": true,
+        "resolved_path": "/tmp/tmpm_ubiss_/mid.dwg",
+        "rotation": null,
+        "saved_path": "mid.dwg",
+        "scale": null,
+        "transform": [
+          [
+            1.0,
+            0.0,
+            50.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ]
+      }
+    }
+  ],
+  "warnings": [
+    {
+      "code": "fake",
+      "handle": null,
+      "message": "fake backend",
+      "severity": "info",
+      "source_id": "src-root"
+    }
+  ],
+  "xref_graph": {
+    "edges": [
+      {
+        "composition_required": true,
+        "exists": true,
+        "host_source_id": "src-root",
+        "insertion_point": null,
+        "mode": "attach",
+        "parsed": true,
+        "resolved_path": "/tmp/tmpm_ubiss_/mid.dwg",
+        "saved_path": "mid.dwg",
+        "target_source_id": "src-root__xref_0_mid",
+        "transform": [
+          [
+            1.0,
+            0.0,
+            50.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ]
+      },
+      {
+        "composition_required": true,
+        "exists": true,
+        "host_source_id": "src-root__xref_0_mid",
+        "insertion_point": null,
+        "mode": "attach",
+        "parsed": true,
+        "resolved_path": "/tmp/tmpm_ubiss_/leaf.dwg",
+        "saved_path": "leaf.dwg",
+        "target_source_id": "src-root__xref_0_mid__xref_0_leaf",
+        "transform": [
+          [
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            75.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ]
+      }
+    ],
+    "nodes": [
+      {
+        "depth": 0,
+        "exists": true,
+        "parent_source_id": null,
+        "parse_status": "parsed",
+        "parsed": true,
+        "path": "/tmp/tmpm_ubiss_/root.dwg",
+        "resolved_path": "/tmp/tmpm_ubiss_/root.dwg",
+        "source_id": "src-root"
+      },
+      {
+        "depth": 1,
+        "exists": true,
+        "parent_source_id": "src-root",
+        "parse_status": "parsed",
+        "parsed": true,
+        "path": "mid.dwg",
+        "resolved_path": "/tmp/tmpm_ubiss_/mid.dwg",
+        "source_id": "src-root__xref_0_mid"
+      },
+      {
+        "depth": 2,
+        "exists": true,
+        "parent_source_id": "src-root__xref_0_mid",
+        "parse_status": "parsed",
+        "parsed": true,
+        "path": "leaf.dwg",
+        "resolved_path": "/tmp/tmpm_ubiss_/leaf.dwg",
+        "source_id": "src-root__xref_0_mid__xref_0_leaf"
+      }
+    ]
+  }
+}

@@ -1,4 +1,18 @@
-from .api import Dwg2JsonParser
-from .models import ParseOptions, ParseResult
+"""dwg2json — DWG to canonical JSON deparser with xref-bound composition semantics."""
 
-__all__ = ["Dwg2JsonParser", "ParseOptions", "ParseResult"]
+from .api import Dwg2JsonParser
+from .models import (
+    DwgJsonDocument,
+    ParseOptions,
+    ParseResult,
+)
+
+__version__ = "0.1.0"
+
+__all__ = [
+    "Dwg2JsonParser",
+    "DwgJsonDocument",
+    "ParseOptions",
+    "ParseResult",
+    "__version__",
+]

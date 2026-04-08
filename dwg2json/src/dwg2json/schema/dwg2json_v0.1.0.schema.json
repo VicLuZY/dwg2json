@@ -1,0 +1,1508 @@
+{
+  "$defs": {
+    "BlockDefinition": {
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "is_xref": {
+          "default": false,
+          "title": "Is Xref",
+          "type": "boolean"
+        },
+        "xref_path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Xref Path"
+        },
+        "origin": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Point3D"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "entity_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Entity Ids",
+          "type": "array"
+        },
+        "is_anonymous": {
+          "default": false,
+          "title": "Is Anonymous",
+          "type": "boolean"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "metadata": {
+          "additionalProperties": true,
+          "title": "Metadata",
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ],
+      "title": "BlockDefinition",
+      "type": "object"
+    },
+    "BoundingBox": {
+      "properties": {
+        "min_x": {
+          "title": "Min X",
+          "type": "number"
+        },
+        "min_y": {
+          "title": "Min Y",
+          "type": "number"
+        },
+        "min_z": {
+          "default": 0.0,
+          "title": "Min Z",
+          "type": "number"
+        },
+        "max_x": {
+          "title": "Max X",
+          "type": "number"
+        },
+        "max_y": {
+          "title": "Max Y",
+          "type": "number"
+        },
+        "max_z": {
+          "default": 0.0,
+          "title": "Max Z",
+          "type": "number"
+        }
+      },
+      "required": [
+        "min_x",
+        "min_y",
+        "max_x",
+        "max_y"
+      ],
+      "title": "BoundingBox",
+      "type": "object"
+    },
+    "CompletenessReport": {
+      "properties": {
+        "status": {
+          "default": "complete",
+          "enum": [
+            "complete",
+            "partial",
+            "incomplete"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "missing_xrefs_count": {
+          "default": 0,
+          "title": "Missing Xrefs Count",
+          "type": "integer"
+        },
+        "unresolved_xrefs_count": {
+          "default": 0,
+          "title": "Unresolved Xrefs Count",
+          "type": "integer"
+        },
+        "failed_sources_count": {
+          "default": 0,
+          "title": "Failed Sources Count",
+          "type": "integer"
+        },
+        "cycle_blocked_count": {
+          "default": 0,
+          "title": "Cycle Blocked Count",
+          "type": "integer"
+        },
+        "unsupported_entity_types": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Unsupported Entity Types",
+          "type": "array"
+        },
+        "notes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Notes",
+          "type": "array"
+        },
+        "consumer_caution": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Consumer Caution"
+        }
+      },
+      "title": "CompletenessReport",
+      "type": "object"
+    },
+    "Composition": {
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "root_source_id": {
+          "title": "Root Source Id",
+          "type": "string"
+        },
+        "layout_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Layout Name"
+        },
+        "source_bindings": {
+          "items": {
+            "$ref": "#/$defs/SourceBinding"
+          },
+          "title": "Source Bindings",
+          "type": "array"
+        },
+        "entity_refs": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Entity Refs",
+          "type": "array"
+        },
+        "relation_refs": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Relation Refs",
+          "type": "array"
+        },
+        "bbox": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BoundingBox"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "completeness_status": {
+          "default": "complete",
+          "enum": [
+            "complete",
+            "partial",
+            "missing_dependencies"
+          ],
+          "title": "Completeness Status",
+          "type": "string"
+        },
+        "missing_source_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Missing Source Ids",
+          "type": "array"
+        },
+        "notes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Notes",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "root_source_id"
+      ],
+      "title": "Composition",
+      "type": "object"
+    },
+    "ConfidenceFactor": {
+      "properties": {
+        "factor": {
+          "title": "Factor",
+          "type": "string"
+        },
+        "penalty": {
+          "title": "Penalty",
+          "type": "number"
+        },
+        "detail": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Detail"
+        }
+      },
+      "required": [
+        "factor",
+        "penalty"
+      ],
+      "title": "ConfidenceFactor",
+      "type": "object"
+    },
+    "Entity": {
+      "description": "Canonical representation of a single DWG entity.\n\nGeometry is stored as a type-specific payload dict so that every entity\nkind can carry its own native fields (e.g. ``center``/``radius`` for\nCIRCLE, ``vertices`` for LWPOLYLINE) without a combinatorial explosion\nof optional top-level fields.",
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "source_id": {
+          "title": "Source Id",
+          "type": "string"
+        },
+        "handle": {
+          "title": "Handle",
+          "type": "string"
+        },
+        "owner_handle": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Owner Handle"
+        },
+        "type": {
+          "title": "Type",
+          "type": "string"
+        },
+        "layer": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Layer"
+        },
+        "block_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Block Name"
+        },
+        "layout": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Layout"
+        },
+        "color_index": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Color Index"
+        },
+        "line_type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Line Type"
+        },
+        "line_weight": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Line Weight"
+        },
+        "is_visible": {
+          "default": true,
+          "title": "Is Visible",
+          "type": "boolean"
+        },
+        "text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Text"
+        },
+        "insert_point": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Point3D"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "scale": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Point3D"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "rotation": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rotation"
+        },
+        "attributes": {
+          "additionalProperties": true,
+          "title": "Attributes",
+          "type": "object"
+        },
+        "geometry": {
+          "additionalProperties": true,
+          "title": "Geometry",
+          "type": "object"
+        },
+        "bbox": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BoundingBox"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "transform": {
+          "anyOf": [
+            {
+              "items": {
+                "items": {
+                  "type": "number"
+                },
+                "type": "array"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Transform"
+        },
+        "composed_transform": {
+          "anyOf": [
+            {
+              "items": {
+                "items": {
+                  "type": "number"
+                },
+                "type": "array"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Composed Transform"
+        },
+        "xdata": {
+          "additionalProperties": true,
+          "title": "Xdata",
+          "type": "object"
+        },
+        "raw": {
+          "additionalProperties": true,
+          "title": "Raw",
+          "type": "object"
+        },
+        "tags": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Tags",
+          "type": "array"
+        },
+        "warnings": {
+          "items": {
+            "$ref": "#/$defs/WarningRecord"
+          },
+          "title": "Warnings",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "source_id",
+        "handle",
+        "type"
+      ],
+      "title": "Entity",
+      "type": "object"
+    },
+    "InterpretationConfidence": {
+      "description": "Monotonic confidence heuristic (1.0 = full, 0.0 = no useful data).",
+      "properties": {
+        "value": {
+          "default": 1.0,
+          "title": "Value",
+          "type": "number"
+        },
+        "factors": {
+          "items": {
+            "$ref": "#/$defs/ConfidenceFactor"
+          },
+          "title": "Factors",
+          "type": "array"
+        },
+        "explanation": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Explanation"
+        }
+      },
+      "title": "InterpretationConfidence",
+      "type": "object"
+    },
+    "Layer": {
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "color_index": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Color Index"
+        },
+        "color_rgb": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Color Rgb"
+        },
+        "line_type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Line Type"
+        },
+        "line_weight": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Line Weight"
+        },
+        "is_frozen": {
+          "default": false,
+          "title": "Is Frozen",
+          "type": "boolean"
+        },
+        "is_locked": {
+          "default": false,
+          "title": "Is Locked",
+          "type": "boolean"
+        },
+        "is_off": {
+          "default": false,
+          "title": "Is Off",
+          "type": "boolean"
+        },
+        "plot_style_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Plot Style Name"
+        },
+        "metadata": {
+          "additionalProperties": true,
+          "title": "Metadata",
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ],
+      "title": "Layer",
+      "type": "object"
+    },
+    "Layout": {
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "is_model_space": {
+          "default": false,
+          "title": "Is Model Space",
+          "type": "boolean"
+        },
+        "tab_order": {
+          "default": 0,
+          "title": "Tab Order",
+          "type": "integer"
+        },
+        "metadata": {
+          "additionalProperties": true,
+          "title": "Metadata",
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ],
+      "title": "Layout",
+      "type": "object"
+    },
+    "MissingReference": {
+      "properties": {
+        "kind": {
+          "default": "xref",
+          "title": "Kind",
+          "type": "string"
+        },
+        "requested_path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Requested Path"
+        },
+        "normalized_path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Normalized Path"
+        },
+        "resolver_root": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Resolver Root"
+        },
+        "parent_document_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Parent Document Id"
+        },
+        "host_handles": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Host Handles",
+          "type": "array"
+        },
+        "impact_summary": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Impact Summary"
+        },
+        "severity": {
+          "default": "high",
+          "enum": [
+            "critical",
+            "high",
+            "medium",
+            "low"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "interpretation_impacted": {
+          "default": true,
+          "title": "Interpretation Impacted",
+          "type": "boolean"
+        }
+      },
+      "title": "MissingReference",
+      "type": "object"
+    },
+    "ParserInfo": {
+      "properties": {
+        "name": {
+          "default": "dwg2json",
+          "title": "Name",
+          "type": "string"
+        },
+        "version": {
+          "default": "0.1.0",
+          "title": "Version",
+          "type": "string"
+        },
+        "backend": {
+          "title": "Backend",
+          "type": "string"
+        },
+        "backend_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Backend Version"
+        },
+        "timestamp": {
+          "title": "Timestamp",
+          "type": "string"
+        }
+      },
+      "required": [
+        "backend"
+      ],
+      "title": "ParserInfo",
+      "type": "object"
+    },
+    "Point3D": {
+      "properties": {
+        "x": {
+          "default": 0.0,
+          "title": "X",
+          "type": "number"
+        },
+        "y": {
+          "default": 0.0,
+          "title": "Y",
+          "type": "number"
+        },
+        "z": {
+          "default": 0.0,
+          "title": "Z",
+          "type": "number"
+        }
+      },
+      "title": "Point3D",
+      "type": "object"
+    },
+    "SourceBinding": {
+      "properties": {
+        "source_id": {
+          "title": "Source Id",
+          "type": "string"
+        },
+        "parent_source_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Parent Source Id"
+        },
+        "placement_transform": {
+          "anyOf": [
+            {
+              "items": {
+                "items": {
+                  "type": "number"
+                },
+                "type": "array"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Placement Transform"
+        },
+        "inherited_transform_chain": {
+          "items": {
+            "items": {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            },
+            "type": "array"
+          },
+          "title": "Inherited Transform Chain",
+          "type": "array"
+        },
+        "mode": {
+          "default": "unknown",
+          "enum": [
+            "attach",
+            "overlay",
+            "unknown"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "included_entity_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Included Entity Ids",
+          "type": "array"
+        },
+        "missing_dependency": {
+          "default": false,
+          "title": "Missing Dependency",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "source_id"
+      ],
+      "title": "SourceBinding",
+      "type": "object"
+    },
+    "SourceDocument": {
+      "description": "One parsed DWG/DXF source (root or xref child).",
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "resolved_path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Resolved Path"
+        },
+        "role": {
+          "default": "root",
+          "enum": [
+            "root",
+            "xref"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "exists": {
+          "default": true,
+          "title": "Exists",
+          "type": "boolean"
+        },
+        "parsed": {
+          "default": true,
+          "title": "Parsed",
+          "type": "boolean"
+        },
+        "parse_status": {
+          "default": "parsed",
+          "enum": [
+            "parsed",
+            "partial",
+            "unresolved",
+            "missing",
+            "failed"
+          ],
+          "title": "Parse Status",
+          "type": "string"
+        },
+        "parent_source_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Parent Source Id"
+        },
+        "xref_binding": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/XrefBindingMetadata"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "metadata": {
+          "additionalProperties": true,
+          "title": "Metadata",
+          "type": "object"
+        },
+        "layers": {
+          "items": {
+            "$ref": "#/$defs/Layer"
+          },
+          "title": "Layers",
+          "type": "array"
+        },
+        "layouts": {
+          "items": {
+            "$ref": "#/$defs/Layout"
+          },
+          "title": "Layouts",
+          "type": "array"
+        },
+        "blocks": {
+          "items": {
+            "$ref": "#/$defs/BlockDefinition"
+          },
+          "title": "Blocks",
+          "type": "array"
+        },
+        "entities": {
+          "items": {
+            "$ref": "#/$defs/Entity"
+          },
+          "title": "Entities",
+          "type": "array"
+        },
+        "warnings": {
+          "items": {
+            "$ref": "#/$defs/WarningRecord"
+          },
+          "title": "Warnings",
+          "type": "array"
+        },
+        "raw_summary": {
+          "anyOf": [
+            {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Raw Summary"
+        }
+      },
+      "required": [
+        "id",
+        "path"
+      ],
+      "title": "SourceDocument",
+      "type": "object"
+    },
+    "WarningRecord": {
+      "properties": {
+        "code": {
+          "title": "Code",
+          "type": "string"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        },
+        "severity": {
+          "default": "warning",
+          "enum": [
+            "info",
+            "warning",
+            "error"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "source_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Id"
+        },
+        "handle": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Handle"
+        }
+      },
+      "required": [
+        "code",
+        "message"
+      ],
+      "title": "WarningRecord",
+      "type": "object"
+    },
+    "XrefBindingMetadata": {
+      "properties": {
+        "saved_path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Saved Path"
+        },
+        "resolved_path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Resolved Path"
+        },
+        "mode": {
+          "default": "unknown",
+          "enum": [
+            "attach",
+            "overlay",
+            "unknown"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "transform": {
+          "anyOf": [
+            {
+              "items": {
+                "items": {
+                  "type": "number"
+                },
+                "type": "array"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Transform"
+        },
+        "insertion_point": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Point3D"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "scale": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Point3D"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "rotation": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Rotation"
+        },
+        "exists": {
+          "default": true,
+          "title": "Exists",
+          "type": "boolean"
+        },
+        "parsed": {
+          "default": true,
+          "title": "Parsed",
+          "type": "boolean"
+        },
+        "missing_reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Missing Reason"
+        },
+        "candidate_paths": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Candidate Paths",
+          "type": "array"
+        }
+      },
+      "title": "XrefBindingMetadata",
+      "type": "object"
+    },
+    "XrefGraph": {
+      "properties": {
+        "nodes": {
+          "items": {
+            "$ref": "#/$defs/XrefGraphNode"
+          },
+          "title": "Nodes",
+          "type": "array"
+        },
+        "edges": {
+          "items": {
+            "$ref": "#/$defs/XrefGraphEdge"
+          },
+          "title": "Edges",
+          "type": "array"
+        }
+      },
+      "title": "XrefGraph",
+      "type": "object"
+    },
+    "XrefGraphEdge": {
+      "properties": {
+        "host_source_id": {
+          "title": "Host Source Id",
+          "type": "string"
+        },
+        "target_source_id": {
+          "title": "Target Source Id",
+          "type": "string"
+        },
+        "saved_path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Saved Path"
+        },
+        "resolved_path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Resolved Path"
+        },
+        "mode": {
+          "default": "unknown",
+          "enum": [
+            "attach",
+            "overlay",
+            "unknown"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "transform": {
+          "anyOf": [
+            {
+              "items": {
+                "items": {
+                  "type": "number"
+                },
+                "type": "array"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Transform"
+        },
+        "insertion_point": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Point3D"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "exists": {
+          "default": true,
+          "title": "Exists",
+          "type": "boolean"
+        },
+        "parsed": {
+          "default": true,
+          "title": "Parsed",
+          "type": "boolean"
+        },
+        "composition_required": {
+          "default": true,
+          "title": "Composition Required",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "host_source_id",
+        "target_source_id"
+      ],
+      "title": "XrefGraphEdge",
+      "type": "object"
+    },
+    "XrefGraphNode": {
+      "properties": {
+        "source_id": {
+          "title": "Source Id",
+          "type": "string"
+        },
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "resolved_path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Resolved Path"
+        },
+        "exists": {
+          "default": true,
+          "title": "Exists",
+          "type": "boolean"
+        },
+        "parsed": {
+          "default": true,
+          "title": "Parsed",
+          "type": "boolean"
+        },
+        "parse_status": {
+          "default": "parsed",
+          "enum": [
+            "parsed",
+            "partial",
+            "unresolved",
+            "missing",
+            "failed"
+          ],
+          "title": "Parse Status",
+          "type": "string"
+        },
+        "parent_source_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Parent Source Id"
+        },
+        "depth": {
+          "default": 0,
+          "title": "Depth",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "source_id",
+        "path"
+      ],
+      "title": "XrefGraphNode",
+      "type": "object"
+    }
+  },
+  "properties": {
+    "schema_version": {
+      "default": "0.1.0",
+      "title": "Schema Version",
+      "type": "string"
+    },
+    "parser": {
+      "$ref": "#/$defs/ParserInfo"
+    },
+    "root_source_id": {
+      "title": "Root Source Id",
+      "type": "string"
+    },
+    "sources": {
+      "items": {
+        "$ref": "#/$defs/SourceDocument"
+      },
+      "title": "Sources",
+      "type": "array"
+    },
+    "xref_graph": {
+      "$ref": "#/$defs/XrefGraph"
+    },
+    "compositions": {
+      "items": {
+        "$ref": "#/$defs/Composition"
+      },
+      "title": "Compositions",
+      "type": "array"
+    },
+    "completeness": {
+      "$ref": "#/$defs/CompletenessReport"
+    },
+    "interpretation_confidence": {
+      "$ref": "#/$defs/InterpretationConfidence"
+    },
+    "interpretation_status": {
+      "default": "complete",
+      "enum": [
+        "complete",
+        "partial",
+        "degraded",
+        "failed"
+      ],
+      "title": "Interpretation Status",
+      "type": "string"
+    },
+    "missing_references": {
+      "items": {
+        "$ref": "#/$defs/MissingReference"
+      },
+      "title": "Missing References",
+      "type": "array"
+    },
+    "warnings": {
+      "items": {
+        "$ref": "#/$defs/WarningRecord"
+      },
+      "title": "Warnings",
+      "type": "array"
+    },
+    "metadata": {
+      "additionalProperties": true,
+      "title": "Metadata",
+      "type": "object"
+    }
+  },
+  "required": [
+    "parser",
+    "root_source_id"
+  ],
+  "title": "DwgJsonDocument",
+  "type": "object"
+}
