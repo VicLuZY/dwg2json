@@ -17,6 +17,7 @@ class TestCompositionBuilder:
 
         assert len(result.document.compositions) == 1
         comp = result.document.compositions[0]
+        assert comp.kind == "xref_scene"
         assert comp.root_source_id == "src-root"
         assert comp.completeness_status == "complete"
         assert len(comp.source_bindings) == 1
@@ -87,8 +88,14 @@ class TestCompositionBuilder:
 
         backend = FakeBackend(entity_map={
             "root": [
-                Entity(id="e1", source_id="src-root", handle="10", type="LINE"),
-                Entity(id="e2", source_id="src-root", handle="20", type="CIRCLE"),
+                Entity(
+                    id="e1", source_id="src-root", handle="10", type="LINE",
+                    layout="Model", space_class="model",
+                ),
+                Entity(
+                    id="e2", source_id="src-root", handle="20", type="CIRCLE",
+                    layout="Model", space_class="model",
+                ),
             ],
         })
         parser = Dwg2JsonParser(backend=backend)

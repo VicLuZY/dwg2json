@@ -18,6 +18,7 @@ __all__ = [
     "BlockDefinition",
     "Composition",
     "CompletenessReport",
+    "CompositionKind",
     "DwgJsonDocument",
     "Entity",
     "InterpretationConfidence",
@@ -27,8 +28,11 @@ __all__ = [
     "ParseOptions",
     "ParseResult",
     "ParserInfo",
+    "PublicationIndexEntry",
     "SourceBinding",
     "SourceDocument",
+    "SpaceClass",
+    "ViewportRecord",
     "WarningRecord",
     "XrefBindingMetadata",
     "XrefGraph",
@@ -48,6 +52,8 @@ CompositionCompleteness = Literal["complete", "partial", "missing_dependencies"]
 Severity = Literal["info", "warning", "error"]
 MissingXrefPolicy = Literal["record", "error"]
 MissingSeverity = Literal["critical", "high", "medium", "low"]
+SpaceClass = Literal["model", "paper", "unknown"]
+CompositionKind = Literal["xref_scene", "layout_sheet"]
 
 # ---------------------------------------------------------------------------
 # Geometry helpers
@@ -76,7 +82,7 @@ class Point3D(BaseModel):
 
 class ParserInfo(BaseModel):
     name: str = "dwg2json"
-    version: str = "0.1.0"
+    version: str = "0.2.0"
     backend: str
     backend_version: str | None = None
     timestamp: str = Field(default_factory=lambda: _dt.datetime.now(_dt.UTC).isoformat())
@@ -111,6 +117,35 @@ class Layer(BaseModel):
     is_locked: bool = False
     is_off: bool = False
     plot_style_name: str | None = None
+    # DXF 290: 1 = plot, 0 = do not plot (None when not read / unknown)
+    is_plottable: bool | None = None
+    metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class ViewportRecord(BaseModel):
+    """Paper-space viewport framing model space (publication context)."""
+
+    id: str
+    handle: str
+    owner_layout: str
+    viewport_dxf_id: int | None = None
+    status: int | None = None
+    paper_center: list[float] | None = None
+    paper_width: float | None = None
+    paper_height: float | None = None
+    view_center_model: list[float] | None = None
+    view_height_model: float | None = None
+    scale_zoom_xp: float | None = None
+    view_direction: list[float] | None = None
+    view_target: list[float] | None = None
+    view_twist_angle: float | None = None
+    ucs_ortho_type: int | None = None
+    ucs_handle: str | None = None
+    clipping_boundary_handle: str | None = None
+    frozen_layer_names: list[str] = Field(default_factory=list)
+    flags: int | None = None
+    plot_style_name: str | None = None
+    render_mode: int | None = None
     metadata: dict[str, Any] = Field(default_factory=dict)
 
 
@@ -119,7 +154,19 @@ class Layout(BaseModel):
     name: str
     is_model_space: bool = False
     tab_order: int = 0
+    viewports: list[ViewportRecord] = Field(default_factory=list)
+    paper_space_entity_ids: list[str] = Field(default_factory=list)
+    interpretation_notes: list[str] = Field(default_factory=list)
     metadata: dict[str, Any] = Field(default_factory=dict)
+
+
+class PublicationIndexEntry(BaseModel):
+    """Lightweight navigation hint for layouts and viewports (per source)."""
+
+    layout_name: str
+    viewport_record_id: str | None = None
+    role: str
+    notes: list[str] = Field(default_factory=list)
 
 
 class BlockDefinition(BaseModel):
@@ -156,6 +203,8 @@ class Entity(BaseModel):
     layer: str | None = None
     block_name: str | None = None
     layout: str | None = None
+    space_class: SpaceClass | None = None
+    non_plot_candidate: bool | None = None
     color_index: int | None = None
     line_type: str | None = None
     line_weight: int | None = None
@@ -228,6 +277,7 @@ class SourceDocument(BaseModel):
     entities: list[Entity] = Field(default_factory=list)
     warnings: list[WarningRecord] = Field(default_factory=list)
     raw_summary: dict[str, Any] | None = None
+    publication_index: list[PublicationIndexEntry] = Field(default_factory=list)
 
 
 # ---------------------------------------------------------------------------
@@ -283,6 +333,7 @@ class Composition(BaseModel):
     id: str
     name: str
     root_source_id: str
+    kind: CompositionKind = "xref_scene"
     layout_name: str | None = None
     source_bindings: list[SourceBinding] = Field(default_factory=list)
     entity_refs: list[str] = Field(default_factory=list)
@@ -426,7 +477,7 @@ class CompletenessReport(BaseModel):
 
 
 class DwgJsonDocument(BaseModel):
-    schema_version: str = "0.1.0"
+    schema_version: str = "0.2.0"
     parser: ParserInfo
     root_source_id: str
     sources: list[SourceDocument] = Field(default_factory=list)
@@ -483,6 +534,11 @@ class ParseOptions(BaseModel):
     backend: str = "auto"
     keep_raw_payloads: bool = True
     indent: int = 2
+    emit_viewport_records: bool = True
+    emit_layer_plot_flags: bool = True
+    emit_vp_layer_overrides: bool = True
+    emit_publication_index: bool = True
+    emit_layout_compositions: bool = True
 
 
 class ParseResult(BaseModel):

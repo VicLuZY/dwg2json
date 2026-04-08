@@ -101,10 +101,10 @@
     "backend_version": "test",
     "name": "dwg2json",
     "timestamp": "2026-04-08T04:57:47.854244+00:00",
-    "version": "0.1.0"
+    "version": "0.2.0"
   },
   "root_source_id": "src-device",
-  "schema_version": "0.1.0",
+  "schema_version": "0.2.0",
   "sources": [
     {
       "blocks": [],

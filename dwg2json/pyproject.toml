@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "dwg2json"
-version = "0.1.0"
+version = "0.2.0"
 description = "Python-callable DWG to canonical JSON deparser with xref-bound composition semantics"
 readme = "README.md"
 requires-python = ">=3.11"

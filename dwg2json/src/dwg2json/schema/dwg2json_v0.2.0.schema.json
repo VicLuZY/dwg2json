@@ -189,6 +189,15 @@
           "title": "Root Source Id",
           "type": "string"
         },
+        "kind": {
+          "default": "xref_scene",
+          "enum": [
+            "xref_scene",
+            "layout_sheet"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
         "layout_name": {
           "anyOf": [
             {
@@ -362,6 +371,35 @@
           ],
           "default": null,
           "title": "Layout"
+        },
+        "space_class": {
+          "anyOf": [
+            {
+              "enum": [
+                "model",
+                "paper",
+                "unknown"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Space Class"
+        },
+        "non_plot_candidate": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Non Plot Candidate"
         },
         "color_index": {
           "anyOf": [
@@ -657,6 +695,18 @@
           "default": null,
           "title": "Plot Style Name"
         },
+        "is_plottable": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Is Plottable"
+        },
         "metadata": {
           "additionalProperties": true,
           "title": "Metadata",
@@ -689,6 +739,27 @@
           "default": 0,
           "title": "Tab Order",
           "type": "integer"
+        },
+        "viewports": {
+          "items": {
+            "$ref": "#/$defs/ViewportRecord"
+          },
+          "title": "Viewports",
+          "type": "array"
+        },
+        "paper_space_entity_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Paper Space Entity Ids",
+          "type": "array"
+        },
+        "interpretation_notes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Interpretation Notes",
+          "type": "array"
         },
         "metadata": {
           "additionalProperties": true,
@@ -805,7 +876,7 @@
           "type": "string"
         },
         "version": {
-          "default": "0.1.0",
+          "default": "0.2.0",
           "title": "Version",
           "type": "string"
         },
@@ -855,6 +926,44 @@
         }
       },
       "title": "Point3D",
+      "type": "object"
+    },
+    "PublicationIndexEntry": {
+      "description": "Lightweight navigation hint for layouts and viewports (per source).",
+      "properties": {
+        "layout_name": {
+          "title": "Layout Name",
+          "type": "string"
+        },
+        "viewport_record_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Viewport Record Id"
+        },
+        "role": {
+          "title": "Role",
+          "type": "string"
+        },
+        "notes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Notes",
+          "type": "array"
+        }
+      },
+      "required": [
+        "layout_name",
+        "role"
+      ],
+      "title": "PublicationIndexEntry",
       "type": "object"
     },
     "SourceBinding": {
@@ -1064,6 +1173,13 @@
           ],
           "default": null,
           "title": "Raw Summary"
+        },
+        "publication_index": {
+          "items": {
+            "$ref": "#/$defs/PublicationIndexEntry"
+          },
+          "title": "Publication Index",
+          "type": "array"
         }
       },
       "required": [
@@ -1071,6 +1187,258 @@
         "path"
       ],
       "title": "SourceDocument",
+      "type": "object"
+    },
+    "ViewportRecord": {
+      "description": "Paper-space viewport framing model space (publication context).",
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "handle": {
+          "title": "Handle",
+          "type": "string"
+        },
+        "owner_layout": {
+          "title": "Owner Layout",
+          "type": "string"
+        },
+        "viewport_dxf_id": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Viewport Dxf Id"
+        },
+        "status": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Status"
+        },
+        "paper_center": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Paper Center"
+        },
+        "paper_width": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Paper Width"
+        },
+        "paper_height": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Paper Height"
+        },
+        "view_center_model": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "View Center Model"
+        },
+        "view_height_model": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "View Height Model"
+        },
+        "scale_zoom_xp": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Scale Zoom Xp"
+        },
+        "view_direction": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "View Direction"
+        },
+        "view_target": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "number"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "View Target"
+        },
+        "view_twist_angle": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "View Twist Angle"
+        },
+        "ucs_ortho_type": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ucs Ortho Type"
+        },
+        "ucs_handle": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ucs Handle"
+        },
+        "clipping_boundary_handle": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Clipping Boundary Handle"
+        },
+        "frozen_layer_names": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Frozen Layer Names",
+          "type": "array"
+        },
+        "flags": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Flags"
+        },
+        "plot_style_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Plot Style Name"
+        },
+        "render_mode": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Render Mode"
+        },
+        "metadata": {
+          "additionalProperties": true,
+          "title": "Metadata",
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "handle",
+        "owner_layout"
+      ],
+      "title": "ViewportRecord",
       "type": "object"
     },
     "WarningRecord": {
@@ -1434,7 +1802,7 @@
   },
   "properties": {
     "schema_version": {
-      "default": "0.1.0",
+      "default": "0.2.0",
       "title": "Schema Version",
       "type": "string"
     },

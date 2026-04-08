@@ -38,6 +38,19 @@ Composition truth answers: *How should a consumer interpret the root plus its xr
 
 These layers are both **first-class**. Downstream tools should use source truth for per-file analytics and composition truth for spatially coupled semantics (overlays on backgrounds, multi-file assemblies).
 
+## Authoring vs publication (model space and layouts)
+
+DWG usage in practice often **does not** match the textbook “everything in Model, sheets in Layout” story. dwg2json therefore carries **two complementary truths** in addition to xref composition:
+
+1. **Authoring truth** — Every entity parsed from each layout tab remains in `sources[].entities`, tagged with **`layout`** (layout name) and optional **`space_class`** (`"model"` vs `"paper"`). Layer **`is_plottable`** (DXF plot flag) and **`Entity.non_plot_candidate`** help flag content that may not print.
+2. **Publication truth** — Each **`Layout`** (except Model) can list **`viewports`** (`ViewportRecord`: paper bounds, model view center/height, scale hint, UCS fields, clipping handle, per-viewport **`frozen_layer_names`** when available). **`paper_space_entity_ids`** indexes native sheet geometry. **`interpretation_notes`** call out common mismatches (e.g. busy model space vs a single viewport). **`publication_index`** on each **`SourceDocument`** is a small navigation list for consumers and LLMs.
+
+**`Composition.kind`** distinguishes the xref scene (`xref_scene`, default) from optional per-sheet bundles (`layout_sheet`) whose **`entity_refs`** are paper-space entities on that layout only—not the full model hoard.
+
+**`ParseOptions`** flags (`emit_viewport_records`, `emit_layer_plot_flags`, `emit_vp_layer_overrides`, `emit_publication_index`, `emit_layout_compositions`) default to **on**; turn them off for stricter backward compatibility or smaller JSON.
+
+The LibreDWG backend can read **`.dxf`** files directly with **ezdxf** (no `dwg2dxf` required), which is useful for tests and text-based fixtures.
+
 ## Why xref binding is first-class
 
 In CAD workflows, meaning is often **not local** to a single file:
@@ -60,12 +73,12 @@ End-to-end flow (as orchestrated by `Dwg2JsonParser.parse`):
 
 1. **Backend parse** — Selected `DwgBackend` reads the root path and returns a `ParseResult` with an initial `DwgJsonDocument` (root `SourceDocument`, initial `xref_graph` node, warnings).
 2. **Xref resolution** (optional, `resolve_xrefs=True`) — `XrefResolver` reads `raw_xrefs` (and related metadata), resolves paths, parses child drawings through the same backend, merges sources and graph edges, and records **`MissingReference`** entries and warnings for failures, cycles, and depth limits.
-3. **Composition** (optional, `bind_xrefs=True`) — `CompositionBuilder` constructs **`Composition`** objects with **`SourceBinding`** entries that tie host and xref placements together.
-4. **Confidence** — `compute_confidence` applies a **monotonic** heuristic to `interpretation_confidence` based on missing/failed/unresolved xrefs, unsupported entities, and generic backend warnings.
-5. **Completeness and status** — `CompletenessReport.recompute_from_document` aggregates xref-related problems; `derive_interpretation_status` combines completeness with confidence into `interpretation_status`.
-6. **Export** — If `out_dir` is set, `export_json_file` writes sorted, key-sorted JSON to `<basename>.json`.
+3. **Publication enrichment** — `enrich_source_publication` fills per-layout paper-space indexes, **`interpretation_notes`**, and **`publication_index`** on each **`SourceDocument`** (honouring `ParseOptions` flags).
+4. **Composition** (optional, `bind_xrefs=True`) — `CompositionBuilder` constructs the xref **`Composition`** (`kind="xref_scene"`) and optional per-layout **`Composition`** rows (`kind="layout_sheet"`) for paper-space entity refs.
+5. **Confidence** — `compute_confidence` applies a **monotonic** heuristic to `interpretation_confidence` based on missing/failed/unresolved xrefs, unsupported entities, and generic backend warnings.
+6. **Completeness, status, and export** — `CompletenessReport.recompute_from_document` aggregates xref-related problems; `derive_interpretation_status` combines completeness with confidence into `interpretation_status`; parser options are stored in `metadata`; if `out_dir` is set, `export_json_file` writes sorted JSON.
 
-Stages 2–4 can be disabled via `ParseOptions` for faster introspection or debugging, at the cost of incomplete graph/composition data.
+Stages 2–4 and publication flags can be adjusted via `ParseOptions` for faster introspection or debugging, at the cost of incomplete graph, layout, or publication data.
 
 ## Backend adapter boundary
 
@@ -73,7 +86,7 @@ Backends implement **`DwgBackend`**: given a **`Path`** and **`ParseOptions`**, 
 
 **Responsibilities of a backend**
 
-- Determine availability (e.g. whether `dwg2dxf` exists, optionally via `DWG2JSON_DWG2DXF`).
+- Determine availability (e.g. whether `dwg2dxf` exists, optionally via `DWG2JSON_DWG2DXF`). **`.dxf`** inputs are read with **ezdxf** only and do not require `dwg2dxf`.
 - Perform format-specific decoding (DWG → internal representation). The LibreDWG adapter writes a transient DXF under `tempfile.TemporaryDirectory` and deletes it after `ezdxf` loads the file.
 - Populate at least one **`SourceDocument`** for the root and seed **`xref_graph.nodes`** for the root.
 - Stash xref discovery results where the resolver expects them (e.g. `metadata["raw_xrefs"]` as a list of path/mode/transform hints).
@@ -138,7 +151,7 @@ Floating-point noise from converters can still differ slightly between platforms
 
 ## Schema versioning strategy
 
-- **`schema_version`** on the document (e.g. `0.1.0`) is the **compatibility anchor** for consumers.
+- **`schema_version`** on the document (e.g. `0.2.0`) is the **compatibility anchor** for consumers.
 - **JSON Schema** is generated from the Pydantic models (`DwgJsonDocument.model_json_schema`); it tracks the same logical version.
 - **Breaking changes** (field removals, type changes, renamed required fields) should bump **`schema_version`** according to project policy (semver-like for the schema string) and be documented in release notes.
 - **Non-breaking additions** (optional fields, new optional array elements) may keep the minor component stable or follow a documented additive policy.

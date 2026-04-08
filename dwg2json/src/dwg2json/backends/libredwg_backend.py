@@ -19,6 +19,7 @@ import os
 import shutil
 import subprocess
 import tempfile
+from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
@@ -33,6 +34,7 @@ from ..models import (
     ParserInfo,
     Point3D,
     SourceDocument,
+    ViewportRecord,
     WarningRecord,
     XrefGraphNode,
 )
@@ -108,9 +110,6 @@ class LibreDwgBackend(DwgBackend):
         if not exists:
             return self._failed_result(root_id, path, "Source file does not exist.")
 
-        if not self._dwg2dxf:
-            return self._fallback_result(root_id, path)
-
         try:
             import ezdxf
         except ImportError:
@@ -118,6 +117,16 @@ class LibreDwgBackend(DwgBackend):
                 root_id, path,
                 "ezdxf is not installed. Install with: pip install dwg2json[libredwg]",
             )
+
+        if path.suffix.lower() == ".dxf":
+            try:
+                dxf_doc = ezdxf.readfile(str(path))
+            except Exception as exc:
+                return self._failed_result(root_id, path, f"ezdxf failed to read DXF: {exc}")
+            return self._build_result(root_id, path, dxf_doc, options)
+
+        if not self._dwg2dxf:
+            return self._fallback_result(root_id, path)
 
         try:
             with tempfile.TemporaryDirectory(prefix="dwg2json_") as tmp:
@@ -162,11 +171,16 @@ class LibreDwgBackend(DwgBackend):
         options: ParseOptions,
     ) -> ParseResult:
         warnings: list[WarningRecord] = []
-        layers = self._extract_layers(root_id, dxf_doc)
+        layers = self._extract_layers(root_id, dxf_doc, options)
         layouts = self._extract_layouts(root_id, dxf_doc)
         blocks, raw_xrefs = self._extract_blocks(root_id, dxf_doc)
-        entities, entity_warnings = self._extract_entities(root_id, dxf_doc, options)
+        layers_by_name = {la.name: la for la in layers}
+        vp_by_layout: dict[str, list[ViewportRecord]] = defaultdict(list)
+        entities, entity_warnings = self._extract_entities(
+            root_id, dxf_doc, options, layers_by_name, vp_by_layout
+        )
         warnings.extend(entity_warnings)
+        self._merge_viewports_into_layouts(layouts, vp_by_layout, options)
         doc_metadata = self._extract_metadata(dxf_doc)
         doc_metadata["raw_xrefs"] = raw_xrefs
 
@@ -234,22 +248,30 @@ class LibreDwgBackend(DwgBackend):
             pass
         return meta
 
-    def _extract_layers(self, root_id: str, dxf_doc: Any) -> list[Layer]:
+    def _extract_layers(self, root_id: str, dxf_doc: Any, options: ParseOptions) -> list[Layer]:
         layers: list[Layer] = []
         try:
             for la in dxf_doc.layers:
                 color = la.dxf.get("color", None)
-                layers.append(
-                    Layer(
-                        id=f"{root_id}__layer_{la.dxf.name}",
-                        name=la.dxf.name,
-                        color_index=int(color) if color is not None else None,
-                        line_type=la.dxf.get("linetype", None),
-                        is_frozen=la.is_frozen(),
-                        is_locked=la.is_locked(),
-                        is_off=la.is_off(),
-                    )
-                )
+                kwargs: dict[str, Any] = {
+                    "id": f"{root_id}__layer_{la.dxf.name}",
+                    "name": la.dxf.name,
+                    "color_index": int(color) if color is not None else None,
+                    "line_type": la.dxf.get("linetype", None),
+                    "is_frozen": la.is_frozen(),
+                    "is_locked": la.is_locked(),
+                    "is_off": la.is_off(),
+                }
+                if options.emit_layer_plot_flags:
+                    try:
+                        raw_plot = la.dxf.get("plot", None)
+                        if raw_plot is not None:
+                            kwargs["is_plottable"] = bool(raw_plot)
+                        else:
+                            kwargs["is_plottable"] = True
+                    except Exception:
+                        pass
+                layers.append(Layer(**kwargs))
         except Exception as exc:
             log.warning("Layer extraction error: %s", exc)
         return layers
@@ -277,7 +299,7 @@ class LibreDwgBackend(DwgBackend):
         raw_xrefs: list[dict] = []
         try:
             for blk in dxf_doc.blocks:
-                is_xref = blk.is_xref
+                is_xref = getattr(blk, "is_xref", False)
                 xref_path = blk.dxf.get("xref_path", None) if is_xref else None
                 origin_raw = blk.dxf.get("base_point", None)
                 origin = (
@@ -312,6 +334,8 @@ class LibreDwgBackend(DwgBackend):
         root_id: str,
         dxf_doc: Any,
         options: ParseOptions,
+        layers_by_name: dict[str, Layer],
+        vp_by_layout: dict[str, list[ViewportRecord]],
     ) -> tuple[list[Entity], list[WarningRecord]]:
         entities: list[Entity] = []
         warnings: list[WarningRecord] = []
@@ -321,7 +345,14 @@ class LibreDwgBackend(DwgBackend):
             layout_name = layout.name
             for dxf_entity in layout:
                 try:
-                    ent = self._map_entity(root_id, dxf_entity, layout_name, options)
+                    ent = self._map_entity(
+                        root_id,
+                        dxf_entity,
+                        layout_name,
+                        options,
+                        layers_by_name,
+                        vp_by_layout,
+                    )
                     if ent is not None:
                         entities.append(ent)
                         etype = dxf_entity.dxftype()
@@ -356,6 +387,8 @@ class LibreDwgBackend(DwgBackend):
         dxf_entity: Any,
         layout_name: str,
         options: ParseOptions,
+        layers_by_name: dict[str, Layer],
+        vp_by_layout: dict[str, list[ViewportRecord]],
     ) -> Entity | None:
         dxf = dxf_entity.dxf
         handle = str(dxf.get("handle", ""))
@@ -374,6 +407,17 @@ class LibreDwgBackend(DwgBackend):
             color_index=dxf.get("color", None),
             line_type=dxf.get("linetype", None),
         )
+
+        ent.space_class = "model" if layout_name == "Model" else "paper"
+        if options.emit_layer_plot_flags and layer:
+            lao = layers_by_name.get(str(layer))
+            if lao is not None and lao.is_plottable is not None:
+                ent.non_plot_candidate = not lao.is_plottable
+
+        if options.emit_viewport_records and etype == "VIEWPORT":
+            vp_rec = _build_viewport_record(root_id, layout_name, dxf_entity, options)
+            if vp_rec is not None:
+                vp_by_layout[layout_name].append(vp_rec)
 
         # Text content
         if etype in ("TEXT", "MTEXT", "ATTRIB", "ATTDEF"):
@@ -523,6 +567,21 @@ class LibreDwgBackend(DwgBackend):
         stem = path.stem.replace(" ", "_") or "drawing"
         return f"src-{stem.lower()}"
 
+    @staticmethod
+    def _merge_viewports_into_layouts(
+        layouts: list[Layout],
+        vp_by_layout: dict[str, list[ViewportRecord]],
+        options: ParseOptions,
+    ) -> None:
+        if not options.emit_viewport_records:
+            return
+        by_name = {ly.name: ly for ly in layouts}
+        for name, vps in vp_by_layout.items():
+            ly = by_name.get(name)
+            if ly is None:
+                continue
+            ly.viewports = sorted(vps, key=lambda v: v.handle)
+
 
 # ======================================================================
 # Module-level helper functions
@@ -545,6 +604,87 @@ def _is_overlay(blk: Any) -> bool:
         return bool(flags & 8)
     except Exception:
         return False
+
+
+def _clean_handle(val: Any) -> str | None:
+    if val is None:
+        return None
+    s = str(val).strip()
+    if not s or s == "0":
+        return None
+    return s
+
+
+def _build_viewport_record(
+    root_id: str,
+    layout_name: str,
+    dxf_entity: Any,
+    options: ParseOptions,
+) -> ViewportRecord | None:
+    dxf = dxf_entity.dxf
+    handle = str(dxf.get("handle", ""))
+    if not handle:
+        return None
+
+    center = _vec(dxf.get("center", None))
+    width = dxf.get("width", None)
+    height = dxf.get("height", None)
+    vcp = dxf.get("view_center_point", None)
+    view_center_model: list[float] | None = None
+    if vcp is not None:
+        try:
+            view_center_model = [float(vcp[0]), float(vcp[1]), 0.0]
+        except Exception:
+            view_center_model = None
+    view_height_model = dxf.get("view_height", None)
+    scale_zoom_xp: float | None = None
+    try:
+        if width is not None and view_height_model is not None:
+            vh = float(view_height_model)
+            if vh != 0.0:
+                scale_zoom_xp = float(width) / vh
+    except (TypeError, ValueError):
+        pass
+
+    frozen: list[str] = []
+    if options.emit_vp_layer_overrides:
+        try:
+            frozen = sorted(str(n) for n in dxf_entity.frozen_layers)
+        except Exception:
+            frozen = []
+
+    vp_id = dxf.get("id", None)
+    meta: dict[str, Any] = {}
+    try:
+        if vp_id is not None and int(vp_id) == 1:
+            meta["is_layout_tab_viewport"] = True
+    except (TypeError, ValueError):
+        pass
+
+    return ViewportRecord(
+        id=f"{root_id}__vp_{handle}",
+        handle=handle,
+        owner_layout=layout_name,
+        viewport_dxf_id=int(vp_id) if vp_id is not None else None,
+        status=dxf.get("status", None),
+        paper_center=center,
+        paper_width=float(width) if width is not None else None,
+        paper_height=float(height) if height is not None else None,
+        view_center_model=view_center_model,
+        view_height_model=float(view_height_model) if view_height_model is not None else None,
+        scale_zoom_xp=scale_zoom_xp,
+        view_direction=_vec(dxf.get("view_direction_vector", None)),
+        view_target=_vec(dxf.get("view_target_point", None)),
+        view_twist_angle=dxf.get("view_twist_angle", None),
+        ucs_ortho_type=dxf.get("ucs_ortho_type", None),
+        ucs_handle=_clean_handle(dxf.get("ucs_handle", None)),
+        clipping_boundary_handle=_clean_handle(dxf.get("clipping_boundary_handle", None)),
+        frozen_layer_names=frozen,
+        flags=dxf.get("flags", None),
+        plot_style_name=(str(dxf.get("plot_style_name", "") or None) or None),
+        render_mode=dxf.get("render_mode", None),
+        metadata=meta,
+    )
 
 
 def _safe_text(entity: Any) -> str | None:
@@ -641,9 +781,31 @@ def _extract_geometry(entity: Any, etype: str) -> dict[str, Any]:
             case "IMAGE" | "WIPEOUT":
                 g["insert_point"] = _vec(dxf.get("insert", None))
                 g["image_size"] = _vec(dxf.get("image_size", None))
+            case "VIEWPORT":
+                g["center"] = _vec(dxf.get("center", None))
+                g["width"] = dxf.get("width", None)
+                g["height"] = dxf.get("height", None)
+                g["status"] = dxf.get("status", None)
+                g["viewport_id"] = dxf.get("id", None)
+                g["view_center_point"] = _vec2_to_3(dxf.get("view_center_point", None))
+                g["view_height"] = dxf.get("view_height", None)
+                g["view_direction_vector"] = _vec(dxf.get("view_direction_vector", None))
+                g["view_target_point"] = _vec(dxf.get("view_target_point", None))
+                g["clipping_boundary_handle"] = _clean_handle(
+                    dxf.get("clipping_boundary_handle", None)
+                )
     except Exception:
         pass
     return {k: v for k, v in g.items() if v is not None}
+
+
+def _vec2_to_3(val: Any) -> list[float] | None:
+    if val is None:
+        return None
+    try:
+        return [float(val[0]), float(val[1]), 0.0]
+    except (TypeError, ValueError, IndexError):
+        return None
 
 
 def _vec(val: Any) -> list[float] | None:

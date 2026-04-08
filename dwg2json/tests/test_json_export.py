@@ -31,7 +31,7 @@ class TestJsonExport:
         result = parser.parse(root, ParseOptions(out_dir=str(out_dir)))
 
         data = json.loads(Path(result.output_json_path).read_text())
-        assert data["schema_version"] == "0.1.0"
+        assert data["schema_version"] == "0.2.0"
         assert data["root_source_id"] == "src-root"
 
     def test_output_has_required_top_level_keys(self, tmp_path: Path) -> None:
@@ -60,7 +60,7 @@ class TestJsonExport:
 
         text = result.to_json_text()
         data = json.loads(text)
-        assert data["schema_version"] == "0.1.0"
+        assert data["schema_version"] == "0.2.0"
 
     def test_write_json_file_method(self, tmp_path: Path) -> None:
         root = tmp_path / "root.dwg"

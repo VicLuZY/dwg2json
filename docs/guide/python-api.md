@@ -85,7 +85,7 @@ The canonical document model. Key properties and fields:
 ```python
 doc = result.document
 
-doc.schema_version             # "0.1.0"
+doc.schema_version             # "0.2.0"
 doc.parser                     # ParserInfo (name, version, backend, timestamp)
 doc.root_source_id             # ID of the root SourceDocument
 doc.sources                    # list[SourceDocument]

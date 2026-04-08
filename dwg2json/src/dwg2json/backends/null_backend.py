@@ -23,7 +23,7 @@ from .base import DwgBackend
 
 class NullBackend(DwgBackend):
     name = "null"
-    version = "0.1.0"
+    version = "0.2.0"
 
     def parse(self, path: Path, options: ParseOptions) -> ParseResult:
         root_id = self._source_id(path)

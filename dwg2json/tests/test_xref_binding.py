@@ -95,8 +95,18 @@ class TestResolvedXref:
         backend = FakeBackend(
             xref_map={"root": [{"path": "bg.dwg", "mode": "attach"}]},
             entity_map={
-                "root": [Entity(id="root-e1", source_id="src-root", handle="10", type="LINE")],
-                "bg": [Entity(id="bg-e1", source_id="src-bg", handle="20", type="CIRCLE")],
+                "root": [
+                    Entity(
+                        id="root-e1", source_id="src-root", handle="10", type="LINE",
+                        layout="Model", space_class="model",
+                    ),
+                ],
+                "bg": [
+                    Entity(
+                        id="bg-e1", source_id="src-bg", handle="20", type="CIRCLE",
+                        layout="Model", space_class="model",
+                    ),
+                ],
             },
         )
         parser = Dwg2JsonParser(backend=backend)

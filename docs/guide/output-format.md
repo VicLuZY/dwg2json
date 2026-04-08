@@ -6,7 +6,7 @@ Every successful parse produces one UTF-8 JSON file aligned with the `DwgJsonDoc
 
 ```json
 {
-  "schema_version": "0.1.0",
+  "schema_version": "0.2.0",
   "parser": { ... },
   "root_source_id": "src-drawing",
   "sources": [ ... ],
@@ -25,12 +25,12 @@ Every successful parse produces one UTF-8 JSON file aligned with the `DwgJsonDoc
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `schema_version` | `string` | Version of the canonical schema (e.g. `"0.1.0"`). |
+| `schema_version` | `string` | Version of the canonical schema (e.g. `"0.2.0"`). |
 | `parser` | `ParserInfo` | Parser name, version, backend, backend version, UTC timestamp. |
 | `root_source_id` | `string` | ID of the root `SourceDocument`. |
 | `sources` | `SourceDocument[]` | One record per root or xref source file. |
 | `xref_graph` | `XrefGraph` | Dependency graph with nodes and edges. |
-| `compositions` | `Composition[]` | Composed spatial contexts binding sources together. |
+| `compositions` | `Composition[]` | Composed contexts: xref scene (`kind: "xref_scene"`) and optional per-sheet paper-space bundles (`kind: "layout_sheet"`). |
 | `completeness` | `CompletenessReport` | Aggregate status, counts, and consumer caution. |
 | `interpretation_confidence` | `InterpretationConfidence` | Scalar value, contributing factors, explanation. |
 | `interpretation_status` | `string` | `"complete"`, `"partial"`, `"degraded"`, or `"failed"`. |
@@ -57,11 +57,23 @@ Each source contains the per-file truth:
   "layouts": [ ... ],
   "blocks": [ ... ],
   "entities": [ ... ],
-  "warnings": [ ... ]
+  "warnings": [ ... ],
+  "publication_index": [ ... ]
 }
 ```
 
 For xref children, `role` is `"xref"` and `xref_binding` contains the saved path, resolved path, mode, transform, and resolution status.
+
+### Authoring vs publication
+
+- **`Entity.space_class`** — `"model"` when `layout` is Model, otherwise `"paper"` for entities emitted from a paper-space layout tab.
+- **`Entity.non_plot_candidate`** — When layer plot flags are emitted, `true` if the entity’s layer is marked non-plottable in DXF.
+- **`Layer.is_plottable`** — DXF layer plot flag when available (default treated as plottable when unspecified).
+- **`Layout.viewports`** — `ViewportRecord` entries (paper size, model view, scale hint, UCS, clipping, per-viewport frozen layer names when present).
+- **`Layout.paper_space_entity_ids`** — Handles (canonical entity `id` values) for paper-native geometry on that layout.
+- **`SourceDocument.publication_index`** — Compact `{ layout_name, viewport_record_id, role, notes }` entries for navigation.
+
+Disable enrichment via `ParseOptions` (`emit_viewport_records`, `emit_layer_plot_flags`, `emit_vp_layer_overrides`, `emit_publication_index`, `emit_layout_compositions`).
 
 ## Entity
 
@@ -76,6 +88,8 @@ Entities use a universal shape with type-specific geometry in the `geometry` dic
   "type": "LINE",
   "layer": "WALLS",
   "layout": "Model",
+  "space_class": "model",
+  "non_plot_candidate": null,
   "geometry": {
     "start": [0.0, 0.0, 0.0],
     "end": [10.0, 10.0, 0.0]

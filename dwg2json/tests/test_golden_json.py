@@ -17,8 +17,14 @@ class TestGoldenSingleDwg:
 
         backend = FakeBackend(
             entity_map={"simple": [
-                Entity(id="e1", source_id="src-simple", handle="1A", type="LINE"),
-                Entity(id="e2", source_id="src-simple", handle="1B", type="TEXT", text="Hello"),
+                Entity(
+                    id="e1", source_id="src-simple", handle="1A", type="LINE",
+                    layout="Model", space_class="model",
+                ),
+                Entity(
+                    id="e2", source_id="src-simple", handle="1B", type="TEXT", text="Hello",
+                    layout="Model", space_class="model",
+                ),
             ]},
             layer_map={"simple": [
                 Layer(id="l0", name="0"),

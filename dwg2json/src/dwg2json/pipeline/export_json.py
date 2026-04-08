@@ -23,6 +23,11 @@ def _sort_document(doc: DwgJsonDocument) -> DwgJsonDocument:
         source.entities.sort(key=lambda e: (e.handle, e.id))
         source.layers.sort(key=lambda la: la.name)
         source.blocks.sort(key=lambda b: b.name)
+        for layout in source.layouts:
+            layout.viewports.sort(key=lambda v: v.handle)
+        source.publication_index.sort(
+            key=lambda p: (p.layout_name, p.role, p.viewport_record_id or "")
+        )
     doc.xref_graph.nodes.sort(key=lambda n: (n.depth, n.source_id))
     doc.xref_graph.edges.sort(key=lambda e: (e.host_source_id, e.saved_path or ""))
     doc.compositions.sort(key=lambda c: c.id)

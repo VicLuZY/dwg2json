@@ -19,6 +19,7 @@ from .models import DwgJsonDocument, ParseOptions, ParseResult
 from .pipeline.compose import CompositionBuilder
 from .pipeline.confidence import compute_confidence
 from .pipeline.export_json import export_json_file, to_json_text
+from .pipeline.publication import enrich_source_publication
 from .pipeline.xrefs import XrefResolver
 
 
@@ -80,6 +81,9 @@ class Dwg2JsonParser:
         if options.resolve_xrefs:
             resolver = XrefResolver(self.backend)
             result = resolver.resolve(result, options)
+
+        for source in result.document.sources:
+            enrich_source_publication(source, options)
 
         if options.bind_xrefs:
             composer = CompositionBuilder()

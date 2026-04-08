@@ -12,7 +12,7 @@ The canonical JSON schema is derived from Pydantic v2 models and versioned expli
 
 ## Versioning
 
-`schema_version` (e.g. `"0.1.0"`) is the compatibility anchor:
+`schema_version` (e.g. `"0.2.0"`) is the compatibility anchor:
 
 - **Breaking changes** (removed fields, type changes, renamed required fields) bump the version
 - **Non-breaking additions** (new optional fields, new array elements) may keep the version or follow a documented additive policy
@@ -32,7 +32,7 @@ schema = generate_schema()  # returns a dict
 dwg2json schema > dwg2json.schema.json
 ```
 
-A pre-generated schema file ships at `src/dwg2json/schema/dwg2json_v0.1.0.schema.json`.
+A pre-generated schema file ships at `src/dwg2json/schema/dwg2json_v0.2.0.schema.json`.
 
 ## Validation
 

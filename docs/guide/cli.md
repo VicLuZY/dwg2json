@@ -26,6 +26,11 @@ dwg2json parse <path> [options]
 | `--indent` | `2` | JSON indentation level |
 | `--missing-xref-policy` | `record` | `record` or `error` |
 | `--search-root` | — | Additional xref search directory (repeatable) |
+| `--emit-viewport-records` / `--no-emit-viewport-records` | `True` | Populate `Layout.viewports` |
+| `--emit-layer-plot-flags` / `--no-emit-layer-plot-flags` | `True` | Layer `is_plottable` / entity `non_plot_candidate` |
+| `--emit-vp-layer-overrides` / `--no-emit-vp-layer-overrides` | `True` | Per-viewport `frozen_layer_names` |
+| `--emit-publication-index` / `--no-emit-publication-index` | `True` | `SourceDocument.publication_index` |
+| `--emit-layout-compositions` / `--no-emit-layout-compositions` | `True` | Extra `Composition` rows (`layout_sheet`) |
 
 **Examples:**
 

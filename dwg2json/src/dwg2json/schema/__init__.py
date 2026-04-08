@@ -17,7 +17,7 @@ def generate_schema() -> dict[str, Any]:
 def write_schema_file(output_path: Path | str | None = None) -> Path:
     """Write the JSON Schema to a file and return the path."""
     if output_path is None:
-        output_path = Path(__file__).parent / "dwg2json_v0.1.0.schema.json"
+        output_path = Path(__file__).parent / "dwg2json_v0.2.0.schema.json"
     output_path = Path(output_path)
     output_path.write_text(json.dumps(generate_schema(), indent=2) + "\n", encoding="utf-8")
     return output_path

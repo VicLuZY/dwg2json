@@ -55,7 +55,7 @@ DwgJsonDocument
 ├── ParserInfo
 ├── SourceDocument[]
 │   ├── Layer[]
-│   ├── Layout[]
+│   ├── Layout[] (viewports, paper_space_entity_ids, …)
 │   ├── BlockDefinition[]
 │   ├── Entity[]
 │   │   ├── Point3D (insert_point, scale)
@@ -81,7 +81,7 @@ All fields in `DwgJsonDocument` have defaults and are present in every output:
 
 | Field | Type | Default |
 |-------|------|---------|
-| `schema_version` | `string` | `"0.1.0"` |
+| `schema_version` | `string` | `"0.2.0"` |
 | `parser` | `ParserInfo` | *(required)* |
 | `root_source_id` | `string` | *(required)* |
 | `sources` | `SourceDocument[]` | `[]` |
@@ -99,5 +99,5 @@ All fields in `DwgJsonDocument` have defaults and are present in every output:
 A pre-generated schema file ships with the package at:
 
 ```
-src/dwg2json/schema/dwg2json_v0.1.0.schema.json
+src/dwg2json/schema/dwg2json_v0.2.0.schema.json
 ```

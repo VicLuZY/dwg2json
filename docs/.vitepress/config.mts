@@ -25,7 +25,7 @@ export default defineConfig({
       { text: "Architecture", link: "/architecture/overview" },
       { text: "Reference", link: "/reference/json-schema" },
       {
-        text: "v0.1.0",
+        text: "v0.2.0",
         items: [
           {
             text: "Changelog",

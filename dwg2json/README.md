@@ -108,7 +108,7 @@ The canonical file is a single JSON object aligned with **`DwgJsonDocument`**. T
 
 | Field | Role |
 |-------|------|
-| `schema_version` | Version of the canonical schema (e.g. `0.1.0`). |
+| `schema_version` | Version of the canonical schema (e.g. `0.2.0`). |
 | `parser` | Parser name, version, backend id, optional backend version, UTC timestamp. |
 | `root_source_id` | Identifier of the root `SourceDocument`. |
 | `sources` | One record per root or xref **source**: layers, layouts, blocks, entities, xref binding metadata, parse status, warnings. |

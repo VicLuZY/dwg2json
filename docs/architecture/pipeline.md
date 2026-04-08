@@ -1,6 +1,6 @@
 # Pipeline
 
-The parse pipeline is orchestrated by `Dwg2JsonParser.parse()` and consists of five stages. Each stage is independently testable and can be disabled via `ParseOptions`.
+The parse pipeline is orchestrated by `Dwg2JsonParser.parse()` and consists of six stages. Each stage is independently testable and can be disabled or tuned via `ParseOptions`.
 
 ## Stage 1: Backend parse
 
@@ -28,12 +28,28 @@ The `XrefResolver` iterates over `raw_xrefs` in each source's metadata and:
 
 After resolution, the document contains all reachable sources, a complete xref graph, and full missing-reference reporting.
 
-## Stage 3: Composition
+## Stage 3: Publication enrichment
+
+**Module:** `pipeline/publication.py`
+
+`enrich_source_publication()` runs for every `SourceDocument` and fills:
+
+- Per-layout **`paper_space_entity_ids`** and heuristic **`interpretation_notes`**
+- **`publication_index`** for quick navigation (unless `emit_publication_index=False`)
+
+Layout **`viewports`** and layer plot flags are populated earlier by the LibreDWG backend when the corresponding `ParseOptions` flags are enabled.
+
+## Stage 4: Composition
 
 **Module:** `pipeline/compose.py`  
 **Enabled by:** `bind_xrefs=True`
 
-The `CompositionBuilder` creates one `Composition` per root drawing (extensible to per-layout in the future):
+The `CompositionBuilder` creates:
+
+1. One xref-scene **`Composition`** (`kind="xref_scene"`) that binds all sources with transform chains and global `entity_refs`
+2. Optional per-sheet **`Composition`** rows (`kind="layout_sheet"`) when `emit_layout_compositions=True`, referencing paper-space entity ids only
+
+Steps for the xref composition:
 
 1. Iterates over all sources and creates `SourceBinding` entries
 2. **Propagates transform chains** by walking up the parent chain for each source
@@ -41,7 +57,7 @@ The `CompositionBuilder` creates one `Composition` per root drawing (extensible 
 4. Marks missing sources in `missing_source_ids`
 5. Sets `completeness_status` to `"missing_dependencies"` if any bindings are incomplete
 
-## Stage 4: Confidence computation
+## Stage 5: Confidence computation
 
 **Module:** `pipeline/confidence.py`
 
@@ -52,7 +68,7 @@ The `CompositionBuilder` creates one `Composition` per root drawing (extensible 
 - Applies capped penalties for generic backend warnings
 - Calls `recompute()` to derive the final value and explanation
 
-## Stage 5: Completeness and export
+## Stage 6: Completeness and export
 
 After confidence computation:
 

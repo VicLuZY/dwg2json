@@ -46,7 +46,7 @@ class TestParserInfo:
     def test_defaults(self) -> None:
         pi = ParserInfo(backend="null")
         assert pi.name == "dwg2json"
-        assert pi.version == "0.1.0"
+        assert pi.version == "0.2.0"
         assert pi.backend == "null"
         assert pi.timestamp  # auto-generated
 
@@ -287,7 +287,7 @@ class TestDwgJsonDocument:
         data = doc.model_dump(mode="json")
         doc2 = DwgJsonDocument.model_validate(data)
         assert doc2.root_source_id == "s1"
-        assert doc2.schema_version == "0.1.0"
+        assert doc2.schema_version == "0.2.0"
 
 
 class TestParseOptions:

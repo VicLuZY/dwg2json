@@ -8,6 +8,8 @@ reconstruct the placed geometry.
 
 from __future__ import annotations
 
+import re
+
 from ..models import (
     Composition,
     ParseOptions,
@@ -15,6 +17,11 @@ from ..models import (
     SourceBinding,
     SourceDocument,
 )
+
+
+def _layout_id_segment(layout_name: str) -> str:
+    slug = re.sub(r"[^a-zA-Z0-9._-]+", "_", layout_name.strip()).strip("_")
+    return slug or "layout"
 
 
 class CompositionBuilder:
@@ -26,6 +33,7 @@ class CompositionBuilder:
             id=f"composition-{root.id}",
             name=f"Composed context for {root.path}",
             root_source_id=root.id,
+            kind="xref_scene",
             layout_name="Model",
         )
 
@@ -73,7 +81,38 @@ class CompositionBuilder:
         else:
             composition.completeness_status = "complete"
 
-        document.compositions = [composition]
+        layout_compositions: list[Composition] = []
+        if options.emit_layout_compositions:
+            for layout in root.layouts:
+                if layout.is_model_space:
+                    continue
+                seg = _layout_id_segment(layout.name)
+                lc = Composition(
+                    id=f"layout-sheet-{root.id}-{seg}",
+                    name=f"Layout sheet: {layout.name}",
+                    root_source_id=root.id,
+                    kind="layout_sheet",
+                    layout_name=layout.name,
+                )
+                lc.source_bindings.append(
+                    SourceBinding(
+                        source_id=root.id,
+                        parent_source_id=None,
+                        placement_transform=None,
+                        inherited_transform_chain=[],
+                        mode="unknown",
+                        included_entity_ids=sorted(layout.paper_space_entity_ids),
+                        missing_dependency=False,
+                    )
+                )
+                lc.entity_refs = sorted(layout.paper_space_entity_ids)
+                lc.completeness_status = "complete"
+                for note in layout.interpretation_notes:
+                    if note not in lc.notes:
+                        lc.notes.append(note)
+                layout_compositions.append(lc)
+
+        document.compositions = [composition] + layout_compositions
         return result
 
     @staticmethod

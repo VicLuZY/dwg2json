@@ -51,6 +51,21 @@ def parse(
         callback=_validate_missing_xref_policy,
     ),
     search_roots: list[str] | None = typer.Option(None, "--search-root"),
+    emit_viewport_records: bool = typer.Option(
+        True, "--emit-viewport-records/--no-emit-viewport-records",
+    ),
+    emit_layer_plot_flags: bool = typer.Option(
+        True, "--emit-layer-plot-flags/--no-emit-layer-plot-flags",
+    ),
+    emit_vp_layer_overrides: bool = typer.Option(
+        True, "--emit-vp-layer-overrides/--no-emit-vp-layer-overrides",
+    ),
+    emit_publication_index: bool = typer.Option(
+        True, "--emit-publication-index/--no-emit-publication-index",
+    ),
+    emit_layout_compositions: bool = typer.Option(
+        True, "--emit-layout-compositions/--no-emit-layout-compositions",
+    ),
 ) -> None:
     """Parse a DWG file and emit one canonical JSON file."""
     parser = Dwg2JsonParser(backend=backend)
@@ -65,6 +80,11 @@ def parse(
         out_dir=out_dir,
         backend=backend,
         indent=indent,
+        emit_viewport_records=emit_viewport_records,
+        emit_layer_plot_flags=emit_layer_plot_flags,
+        emit_vp_layer_overrides=emit_vp_layer_overrides,
+        emit_publication_index=emit_publication_index,
+        emit_layout_compositions=emit_layout_compositions,
     )
 
     result = parser.parse(path, options)

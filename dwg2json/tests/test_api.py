@@ -30,7 +30,7 @@ class TestDwg2JsonParser:
         result = parser.parse(root)
 
         assert result.document.root_source_id == "src-test"
-        assert result.document.schema_version == "0.1.0"
+        assert result.document.schema_version == "0.2.0"
 
     def test_parse_with_options(self, tmp_path: Path) -> None:
         root = tmp_path / "test.dwg"
@@ -75,7 +75,7 @@ class TestConvenienceMethods:
         doc = parser.parse_file(root)
 
         assert doc.root_source_id == "src-test"
-        assert doc.schema_version == "0.1.0"
+        assert doc.schema_version == "0.2.0"
 
     def test_parse_to_json_text(self, tmp_path: Path) -> None:
         root = tmp_path / "test.dwg"

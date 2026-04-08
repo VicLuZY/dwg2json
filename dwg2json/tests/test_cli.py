@@ -26,7 +26,7 @@ class TestParseCommand:
         assert output_file.exists()
 
         data = json.loads(output_file.read_text())
-        assert data["schema_version"] == "0.1.0"
+        assert data["schema_version"] == "0.2.0"
 
     def test_parse_no_resolve(self, tmp_path: Path) -> None:
         root = tmp_path / "test.dwg"

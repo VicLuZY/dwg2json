@@ -38,20 +38,37 @@ class FakeBackend(DwgBackend):
         xref_map: dict[str, list[dict[str, Any]]] | None = None,
         entity_map: dict[str, list[Entity]] | None = None,
         layer_map: dict[str, list[Layer]] | None = None,
+        extra_layouts: list[Layout] | None = None,
     ) -> None:
         self.xref_map = xref_map or {}
         self.entity_map = entity_map or {}
         self.layer_map = layer_map or {}
+        self.extra_layouts = extra_layouts or []
 
     def parse(self, path: Path, options: ParseOptions) -> ParseResult:
         root_id = f"src-{path.stem}"
         raw_xrefs = self.xref_map.get(path.stem, [])
         entities = self.entity_map.get(path.stem, [
-            Entity(id=f"{root_id}-e1", source_id=root_id, handle="10", type="LINE"),
+            Entity(
+                id=f"{root_id}-e1",
+                source_id=root_id,
+                handle="10",
+                type="LINE",
+                layout="Model",
+                space_class="model",
+            ),
         ])
         layers = self.layer_map.get(path.stem, [
             Layer(id=f"{root_id}__layer_0", name="0"),
         ])
+
+        base_layouts = [
+            Layout(id=f"{root_id}__model", name="Model", is_model_space=True, tab_order=0),
+        ]
+        extra = list(self.extra_layouts)
+        layouts: list[Layout] = []
+        for i, ly in enumerate(base_layouts + extra):
+            layouts.append(ly.model_copy(update={"tab_order": i}))
 
         source = SourceDocument(
             id=root_id,
@@ -63,7 +80,7 @@ class FakeBackend(DwgBackend):
             parse_status="parsed",
             metadata={"raw_xrefs": raw_xrefs},
             layers=layers,
-            layouts=[Layout(id=f"{root_id}__model", name="Model", is_model_space=True)],
+            layouts=layouts,
             blocks=[],
             entities=entities,
             warnings=[
