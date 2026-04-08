@@ -44,8 +44,8 @@ A backend must **not**:
 Converts DWG → DXF using LibreDWG's `dwg2dxf` CLI tool, then parses the DXF with **ezdxf**.
 
 **Requirements:**
-- `dwg2dxf` on `$PATH` (from LibreDWG)
-- `ezdxf` Python package
+- `dwg2dxf` on `$PATH`, or **`DWG2JSON_DWG2DXF`** pointing at the binary
+- `ezdxf` (pulled in as a normal dependency of `dwg2json`)
 
 **Extracts:**
 - Document metadata (units, extents, version)

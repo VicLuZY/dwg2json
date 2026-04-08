@@ -12,7 +12,6 @@ Usage::
 from __future__ import annotations
 
 from pathlib import Path
-from typing import TYPE_CHECKING
 
 from .backends.base import DwgBackend
 from .backends.registry import get_backend
@@ -21,9 +20,6 @@ from .pipeline.compose import CompositionBuilder
 from .pipeline.confidence import compute_confidence
 from .pipeline.export_json import export_json_file, to_json_text
 from .pipeline.xrefs import XrefResolver
-
-if TYPE_CHECKING:
-    pass
 
 
 class Dwg2JsonParser:
@@ -48,7 +44,8 @@ class Dwg2JsonParser:
 
     def parse_to_json_text(self, path: str | Path, indent: int = 2, **kwargs) -> str:
         """Parse a DWG and return the canonical JSON as a string."""
-        result = self.parse(Path(path), ParseOptions(indent=indent, **kwargs) if kwargs else None)
+        opts = ParseOptions(indent=indent, **kwargs)
+        result = self.parse(Path(path), opts)
         return to_json_text(result, indent=indent)
 
     def parse_to_json_file(

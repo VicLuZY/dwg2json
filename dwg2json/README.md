@@ -2,8 +2,9 @@
 
 Open-source DWG semantic deparser to one canonical JSON file.
 
-[![CI](https://img.shields.io/badge/CI-placeholder-lightgrey)](https://example.com)
-[![PyPI](https://img.shields.io/badge/PyPI-placeholder-lightgrey)](https://pypi.org/project/dwg2json/)
+[![CI](https://github.com/VicLuZY/dwg2json/actions/workflows/ci.yml/badge.svg)](https://github.com/VicLuZY/dwg2json/actions/workflows/ci.yml)
+[![Docs](https://img.shields.io/badge/docs-VitePress-646cff)](https://vicluzy.github.io/dwg2json/)
+[![PyPI](https://img.shields.io/pypi/v/dwg2json.svg)](https://pypi.org/project/dwg2json/)
 [![License: AGPL-3.0-or-later](https://img.shields.io/badge/License-AGPL--3.0--or--later-blue.svg)](https://www.gnu.org/licenses/agpl-3.0.html)
 
 ## Overview
@@ -29,13 +30,15 @@ pip install dwg2json
 
 **Real DWG decoding** uses the **LibreDWG** toolchain: the `dwg2dxf` binary must be installed and available on your `PATH`. The library converts DWG → DXF, then reads the DXF in Python.
 
-**DXF parsing** for that path requires **[ezdxf](https://github.com/mozman/ezdxf)**. Install it alongside the package, for example:
+**DXF parsing** uses **[ezdxf](https://github.com/mozman/ezdxf)**, which is a **required dependency** of this package (installed automatically with `pip install dwg2json`).
+
+If `dwg2dxf` is not on your `PATH`, you can point to the binary explicitly:
 
 ```bash
-pip install ezdxf
+export DWG2JSON_DWG2DXF=/opt/libredwg/bin/dwg2dxf
 ```
 
-If LibreDWG is missing, the default `auto` backend falls back to the **null** backend (structure-only, no geometry), which is useful for tests and pipeline development.
+If LibreDWG is missing entirely, the default `auto` backend falls back to the **null** backend (structure-only, no geometry), which is useful for tests and pipeline development.
 
 Requires **Python 3.11+**.
 
@@ -147,22 +150,42 @@ See **[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)** for a deeper design discuss
 
 | Backend | Description |
 |---------|-------------|
-| **`libredwg`** | Runs **`dwg2dxf`** (LibreDWG) to produce a temporary DXF, then loads it with **ezdxf** and walks the document into canonical models. Requires `dwg2dxf` on `PATH` and `ezdxf` installed in the environment. |
+| **`libredwg`** | Runs **`dwg2dxf`** (LibreDWG) to produce a temporary DXF (in a process-local temp directory, removed after read), then loads it with **ezdxf**. Requires `dwg2dxf` on `PATH` or **`DWG2JSON_DWG2DXF`** set to the binary path. |
 | **`null`** | Returns a valid, minimal document (empty entities, stub layouts) for testing and development without a decoder. |
 | **`auto`** | Uses LibreDWG when `dwg2dxf` is available; otherwise the null backend. |
 
 Register or select backends via `get_backend(name)` and `ParseOptions.backend` / `dwg2json parse --backend`.
+
+## Documentation
+
+- **Site (VitePress):** [vicluzy.github.io/dwg2json](https://vicluzy.github.io/dwg2json/)
+- **Architecture (repo):** [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
 ## Development
 
 Clone the repository and install in editable mode with dev dependencies:
 
 ```bash
+cd dwg2json
+python -m venv .venv
+source .venv/bin/activate   # Windows: .venv\Scripts\activate
 pip install -e ".[dev]"
 ```
 
-- **Tests:** `pytest` (project uses `pythonpath = ["src"]` in config).
-- **Lint:** `ruff check .` (and `ruff format` if you adopt formatting).
+- **Tests:** `pytest` and `pytest --cov=dwg2json` (see `pyproject.toml` for `pythonpath`).
+- **Lint:** `ruff check .`
+- **Types:** `mypy src/dwg2json`
+
+### Optional: bulk DWG fixtures (not committed)
+
+From the **repository root** (parent of `dwg2json/`), you can download upstream test drawings into `local_dwg_samples/` (gitignored) and batch-parse them:
+
+```bash
+python scripts/fetch_libredwg_test_dwgs.py --dest local_dwg_samples
+python scripts/batch_parse_dwgs.py --root local_dwg_samples
+```
+
+Requires a working `dwg2dxf`. The GitHub Actions workflow **DWG corpus smoke** (`.github/workflows/dwg_corpus.yml`) builds LibreDWG from source on the runner and runs the same idea without storing binaries in git.
 
 ## License
 

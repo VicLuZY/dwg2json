@@ -26,6 +26,15 @@ from .models import ParseOptions
 app = typer.Typer(add_completion=False, help="dwg2json — DWG to canonical JSON CLI")
 console = Console()
 
+_MISSING_XREF_POLICIES = frozenset({"record", "error"})
+
+
+def _validate_missing_xref_policy(value: str) -> str:
+    if value not in _MISSING_XREF_POLICIES:
+        allowed = ", ".join(sorted(_MISSING_XREF_POLICIES))
+        raise typer.BadParameter(f"must be one of: {allowed}")
+    return value
+
 
 @app.command()
 def parse(
@@ -36,7 +45,11 @@ def parse(
     max_xref_depth: int = typer.Option(8, "--max-xref-depth", min=0),
     backend: str = typer.Option("auto", "--backend", "-b"),
     indent: int = typer.Option(2, "--indent"),
-    missing_xref_policy: str = typer.Option("record", "--missing-xref-policy"),
+    missing_xref_policy: str = typer.Option(
+        "record",
+        "--missing-xref-policy",
+        callback=_validate_missing_xref_policy,
+    ),
     search_roots: list[str] | None = typer.Option(None, "--search-root"),
 ) -> None:
     """Parse a DWG file and emit one canonical JSON file."""
@@ -47,7 +60,7 @@ def parse(
         resolve_xrefs=resolve_xrefs,
         bind_xrefs=bind_xrefs,
         max_xref_depth=max_xref_depth,
-        missing_xref_policy=missing_xref_policy,  # type: ignore[arg-type]
+        missing_xref_policy=missing_xref_policy,  # type: ignore[arg-type]  # validated by Typer
         xref_search_roots=search_roots or [],
         out_dir=out_dir,
         backend=backend,

@@ -40,6 +40,18 @@ from .base import DwgBackend
 
 log = logging.getLogger(__name__)
 
+
+def _format_subprocess_failure(tool: str, exc: subprocess.CalledProcessError) -> str:
+    """Build a concise error string including stderr/stdout when present."""
+    msg = f"{tool} failed with exit code {exc.returncode}"
+    err_out = (exc.stderr or "").strip() or (exc.stdout or "").strip()
+    if not err_out:
+        return msg
+    if len(err_out) > 800:
+        err_out = err_out[:800] + "…"
+    return f"{msg}: {err_out}"
+
+
 # Entity types we know how to map.  Anything else gets a best-effort
 # generic mapping with a warning.
 _KNOWN_TYPES: set[str] = {
@@ -100,11 +112,6 @@ class LibreDwgBackend(DwgBackend):
             return self._fallback_result(root_id, path)
 
         try:
-            dxf_path = self._convert_to_dxf(path)
-        except (subprocess.CalledProcessError, OSError) as exc:
-            return self._failed_result(root_id, path, f"dwg2dxf conversion failed: {exc}")
-
-        try:
             import ezdxf
         except ImportError:
             return self._failed_result(
@@ -113,7 +120,15 @@ class LibreDwgBackend(DwgBackend):
             )
 
         try:
-            dxf_doc = ezdxf.readfile(str(dxf_path))
+            with tempfile.TemporaryDirectory(prefix="dwg2json_") as tmp:
+                dxf_path = Path(tmp) / f"{path.stem}.dxf"
+                self._run_dwg2dxf(path, dxf_path)
+                dxf_doc = ezdxf.readfile(str(dxf_path))
+        except subprocess.CalledProcessError as exc:
+            detail = _format_subprocess_failure("dwg2dxf", exc)
+            return self._failed_result(root_id, path, detail)
+        except OSError as exc:
+            return self._failed_result(root_id, path, f"dwg2dxf conversion failed: {exc}")
         except Exception as exc:
             return self._failed_result(root_id, path, f"ezdxf failed to read DXF: {exc}")
 
@@ -123,19 +138,17 @@ class LibreDwgBackend(DwgBackend):
     # DWG → DXF conversion
     # ------------------------------------------------------------------
 
-    def _convert_to_dxf(self, dwg_path: Path) -> Path:
+    def _run_dwg2dxf(self, dwg_path: Path, out_dxf: Path) -> None:
         assert self._dwg2dxf is not None
-        tmp_dir = Path(tempfile.mkdtemp(prefix="dwg2json_"))
-        out_path = tmp_dir / f"{dwg_path.stem}.dxf"
         subprocess.run(
-            [self._dwg2dxf, "-y", "-o", str(out_path), str(dwg_path)],
+            [self._dwg2dxf, "-y", "-o", str(out_dxf), str(dwg_path)],
             check=True,
             capture_output=True,
+            text=True,
             timeout=120,
         )
-        if not out_path.exists():
-            raise FileNotFoundError(f"dwg2dxf did not produce {out_path}")
-        return out_path
+        if not out_dxf.exists():
+            raise FileNotFoundError(f"dwg2dxf did not produce {out_dxf}")
 
     # ------------------------------------------------------------------
     # Build result from ezdxf document
@@ -497,7 +510,7 @@ class LibreDwgBackend(DwgBackend):
                 [self._dwg2dxf, "--version"],
                 capture_output=True,
                 text=True,
-                timeout=5,
+                timeout=15,
             )
             out = result.stdout.strip() or result.stderr.strip()
             if out:

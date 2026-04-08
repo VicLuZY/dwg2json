@@ -42,6 +42,18 @@ class TestParseCommand:
         ])
         assert result.exit_code == 0
 
+    def test_parse_rejects_invalid_missing_xref_policy(self, tmp_path: Path) -> None:
+        root = tmp_path / "test.dwg"
+        root.write_bytes(b"\x00")
+        result = runner.invoke(app, [
+            "parse", str(root),
+            "--backend", "null",
+            "--missing-xref-policy", "bogus",
+        ])
+        assert result.exit_code != 0
+        combined = (result.stdout or "") + (result.stderr or "")
+        assert "record" in combined
+
 
 class TestSchemaCommand:
     def test_schema_outputs_json(self) -> None:

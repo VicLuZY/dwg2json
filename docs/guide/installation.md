@@ -26,9 +26,13 @@ The primary backend converts DWG files to DXF using **LibreDWG**'s `dwg2dxf` too
 
 ### Ubuntu / Debian
 
+Some releases ship **`libredwg-utils`** (contains `dwg2dxf`):
+
 ```bash
 sudo apt install libredwg-utils
 ```
+
+Package availability varies by distro and release. If the package is missing, build LibreDWG from [source](https://github.com/LibreDWG/libredwg) or set **`DWG2JSON_DWG2DXF`** to a `dwg2dxf` you installed elsewhere.
 
 ### macOS (Homebrew)
 

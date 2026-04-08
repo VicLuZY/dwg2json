@@ -73,8 +73,8 @@ Backends implement **`DwgBackend`**: given a **`Path`** and **`ParseOptions`**, 
 
 **Responsibilities of a backend**
 
-- Determine availability (e.g. whether `dwg2dxf` exists).
-- Perform format-specific decoding (DWG → internal representation).
+- Determine availability (e.g. whether `dwg2dxf` exists, optionally via `DWG2JSON_DWG2DXF`).
+- Perform format-specific decoding (DWG → internal representation). The LibreDWG adapter writes a transient DXF under `tempfile.TemporaryDirectory` and deletes it after `ezdxf` loads the file.
 - Populate at least one **`SourceDocument`** for the root and seed **`xref_graph.nodes`** for the root.
 - Stash xref discovery results where the resolver expects them (e.g. `metadata["raw_xrefs"]` as a list of path/mode/transform hints).
 

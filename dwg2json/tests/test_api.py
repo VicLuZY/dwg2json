@@ -87,6 +87,21 @@ class TestConvenienceMethods:
         data = json.loads(text)
         assert data["root_source_id"] == "src-test"
 
+    def test_parse_to_json_text_respects_indent(self, tmp_path: Path) -> None:
+        root = tmp_path / "test.dwg"
+        root.write_bytes(b"\x00")
+
+        parser = Dwg2JsonParser(backend=FakeBackend())
+        compact = parser.parse_to_json_text(root, indent=0)
+        spaced = parser.parse_to_json_text(root, indent=2)
+
+        as_compact = json.loads(compact)
+        as_spaced = json.loads(spaced)
+        # Full JSON differs (e.g. recorded parser_options.indent, timestamps).
+        assert as_compact["root_source_id"] == as_spaced["root_source_id"]
+        assert as_compact["schema_version"] == as_spaced["schema_version"]
+        assert len(compact) < len(spaced)
+
     def test_parse_to_json_file(self, tmp_path: Path) -> None:
         root = tmp_path / "test.dwg"
         root.write_bytes(b"\x00")

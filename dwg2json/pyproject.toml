@@ -44,6 +44,7 @@ dev = [
   "mypy>=1.15,<2",
   "jsonschema>=4.20"
 ]
+# Historical alias; ezdxf is already a core dependency.
 libredwg = ["ezdxf>=0.21"]
 
 [project.scripts]
@@ -63,3 +64,11 @@ ignore = ["B008"]
 [tool.pytest.ini_options]
 pythonpath = ["src"]
 addopts = "-q"
+
+[tool.mypy]
+python_version = "3.11"
+warn_unused_ignores = true
+show_error_codes = true
+namespace_packages = true
+explicit_package_bases = true
+mypy_path = "src"

@@ -11,7 +11,7 @@ This file records all third-party components used by dwg2json, their license ter
 | typer | MIT | pip dependency | CLI framework |
 | rich | MIT | pip dependency | Terminal output formatting |
 | typing-extensions | PSF | pip dependency | Backport type hints |
-| ezdxf | MIT | pip dependency (optional) | DXF parsing after DWG conversion |
+| ezdxf | MIT | pip dependency | DXF parsing after DWG → DXF conversion |
 
 ## System Dependencies
 

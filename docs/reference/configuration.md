@@ -16,6 +16,12 @@ All configuration is passed via `ParseOptions` (Python) or CLI flags. There are 
 | `keep_raw_payloads` | `bool` | `True` | — | Include raw DXF data in entity `raw` field |
 | `indent` | `int` | `2` | `--indent` | JSON indentation level |
 
+## Environment variables
+
+| Variable | Applies to | Description |
+|----------|------------|-------------|
+| `DWG2JSON_DWG2DXF` | **libredwg** backend | Absolute path to the `dwg2dxf` executable. If unset or invalid, the backend falls back to `dwg2dxf` on `PATH`. |
+
 ## Xref search roots
 
 When a saved xref path cannot be resolved relative to the host DWG, search roots provide fallback locations:
