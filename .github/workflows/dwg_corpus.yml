@@ -13,15 +13,28 @@ permissions:
 
 jobs:
   parse-corpus:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install LibreDWG CLI
+      # Ubuntu runners often omit a prebuilt libredwg-utils package; build dwg2dxf
+      # from the upstream release tarball (GPL-3.0-or-later).
+      - name: Build LibreDWG dwg2dxf
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq libredwg-utils
-          dwg2dxf --version
+          sudo apt-get install -y -qq \
+            build-essential autoconf automake libtool pkg-config \
+            libxml2-dev libpcre2-dev
+          curl -fsSL -o /tmp/libredwg.tar.xz \
+            https://github.com/LibreDWG/libredwg/releases/download/0.13.4/libredwg-0.13.4.tar.xz
+          tar xf /tmp/libredwg.tar.xz -C /tmp
+          cd /tmp/libredwg-0.13.4
+          ./configure --prefix="${RUNNER_TEMP}/libredwg" \
+            --disable-python --disable-java --disable-werror
+          make -j"$(nproc)"
+          make install
+          echo "DWG2JSON_DWG2DXF=${RUNNER_TEMP}/libredwg/bin/dwg2dxf" >> "$GITHUB_ENV"
+          "${RUNNER_TEMP}/libredwg/bin/dwg2dxf" --version
 
       - uses: actions/setup-python@v5
         with:
