@@ -19,3 +19,6 @@ htmlcov/
 node_modules/
 docs/.vitepress/dist/
 docs/.vitepress/cache/
+
+# Downloaded DWG fixtures for local integration testing (never commit binaries)
+local_dwg_samples/

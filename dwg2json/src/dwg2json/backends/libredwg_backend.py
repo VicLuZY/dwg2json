@@ -7,13 +7,15 @@ Pipeline:
   3. This module walks the ezdxf document to populate canonical models.
 
 System dependency: LibreDWG must be installed and ``dwg2dxf`` must be
-on ``$PATH``.  ``ezdxf`` is a pip dependency.
+on ``$PATH`` (or set ``DWG2JSON_DWG2DXF`` to the full path of the binary).
+``ezdxf`` is a pip dependency.
 """
 
 from __future__ import annotations
 
 import logging
 import math
+import os
 import shutil
 import subprocess
 import tempfile
@@ -69,7 +71,14 @@ class LibreDwgBackend(DwgBackend):
     version: str | None = None
 
     def __init__(self) -> None:
-        self._dwg2dxf = shutil.which("dwg2dxf")
+        self._dwg2dxf = None
+        env_bin = os.environ.get("DWG2JSON_DWG2DXF", "").strip()
+        if env_bin:
+            p = Path(env_bin)
+            if p.is_file():
+                self._dwg2dxf = str(p)
+        if self._dwg2dxf is None:
+            self._dwg2dxf = shutil.which("dwg2dxf")
         if self._dwg2dxf:
             self._detect_version()
 

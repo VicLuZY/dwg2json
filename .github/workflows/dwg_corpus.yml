@@ -1,0 +1,65 @@
+# Downloads LibreDWG + ezdxf sample DWGs (no binaries in git), installs dwg2dxf,
+# and batch-parses them. Manual / scheduled only — keeps default CI fast.
+
+name: DWG corpus smoke
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 6 * * 0" # weekly Sunday 06:00 UTC
+
+permissions:
+  contents: read
+
+jobs:
+  parse-corpus:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install LibreDWG CLI
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq libredwg-utils
+          dwg2dxf --version
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dwg2json
+        working-directory: dwg2json
+        run: pip install -e ".[dev]"
+
+      - name: Download test DWGs
+        run: python scripts/fetch_libredwg_test_dwgs.py --dest local_dwg_samples --jobs 8
+
+      - name: Batch parse
+        run: python scripts/batch_parse_dwgs.py --root local_dwg_samples --out-report local_dwg_samples/parse_report.json
+        continue-on-error: true
+
+      - name: Summarize failures
+        if: always()
+        run: |
+          python3 << 'PY'
+          import json
+          from pathlib import Path
+          p = Path("local_dwg_samples/parse_report.json")
+          if not p.exists():
+              print("No report")
+              raise SystemExit(0)
+          data = json.loads(p.read_text())
+          bad = [r for r in data["results"] if not r.get("ok")]
+          print(f"Total {data['total']} ok={data['ok']} failed={data['failed']}")
+          for r in bad[:40]:
+              print("FAIL", r.get("file"), r.get("error", "")[:200])
+          if len(bad) > 40:
+              print(f"... {len(bad) - 40} more failures")
+          PY
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: dwg-parse-report
+          path: local_dwg_samples/parse_report.json
+          if-no-files-found: warn
