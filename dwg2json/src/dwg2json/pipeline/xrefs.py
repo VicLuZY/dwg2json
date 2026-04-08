@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+from typing import cast
 
 from ..models import (
     MissingReference,
@@ -13,6 +14,7 @@ from ..models import (
     XrefBindingMetadata,
     XrefGraphEdge,
     XrefGraphNode,
+    XrefMode,
 )
 from .xref_paths import normalize_xref_path, resolve_candidate_paths
 
@@ -75,7 +77,7 @@ class XrefResolver:
         raw_xrefs: list[dict] = host_source.metadata.get("raw_xrefs", [])
         for index, raw in enumerate(raw_xrefs):
             raw_path: str | None = raw.get("path")
-            mode = raw.get("mode", "unknown")
+            mode = cast(XrefMode, raw.get("mode", "unknown"))
             transform = raw.get("transform")
             insertion_point = raw.get("insertion_point")
             child_id = self._child_id(host_source.id, index, raw_path)

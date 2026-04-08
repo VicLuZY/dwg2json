@@ -115,6 +115,7 @@ class LibreDwgBackend(DwgBackend):
     # ------------------------------------------------------------------
 
     def _convert_to_dxf(self, dwg_path: Path) -> Path:
+        assert self._dwg2dxf is not None
         tmp_dir = Path(tempfile.mkdtemp(prefix="dwg2json_"))
         out_path = tmp_dir / f"{dwg_path.stem}.dxf"
         subprocess.run(
@@ -481,6 +482,7 @@ class LibreDwgBackend(DwgBackend):
     # ------------------------------------------------------------------
 
     def _detect_version(self) -> None:
+        assert self._dwg2dxf is not None
         try:
             result = subprocess.run(
                 [self._dwg2dxf, "--version"],

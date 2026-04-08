@@ -21,7 +21,7 @@ from pathlib import Path
 def resolve_candidate_paths(
     base_dir: Path,
     raw_path: str | None,
-    search_roots: list[str | Path] | None = None,
+    search_roots: list[str] | list[Path] | None = None,
 ) -> list[Path]:
     """Return an ordered list of candidate file-system paths for *raw_path*.
 
