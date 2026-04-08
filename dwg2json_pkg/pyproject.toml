@@ -1,0 +1,53 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "dwg2json"
+version = "0.1.0"
+description = "Open-source DWG semantic deparser to one canonical JSON document."
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "AGPL-3.0-or-later"}
+authors = [{name = "Open Source Contributors"}]
+keywords = ["dwg", "cad", "json", "parser", "xref", "aec", "llm"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: GNU Affero General Public License v3",
+  "Operating System :: OS Independent",
+]
+
+dependencies = [
+  "pydantic>=2.7,<3",
+  "typing-extensions>=4.10",
+  "click>=8.1,<9",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8,<9",
+  "ruff>=0.5",
+  "mypy>=1.10",
+]
+native = [
+  "cffi>=1.16",
+]
+
+[project.scripts]
+dwg2json = "dwg2json.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.mypy]
+python_version = "3.10"
+strict = false
+warn_return_any = true
+warn_unused_configs = true

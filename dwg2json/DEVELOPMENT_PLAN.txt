@@ -1,0 +1,382 @@
+PROJECT: dwg2json
+PYPI NAME: dwg2json
+IMPORT NAME: dwg2json
+CLI NAME: dwg2json
+LICENSE TARGET: AGPL-3.0-or-later
+PRIMARY LANGUAGE: Python 3.11+
+PRIMARY EXECUTION MODEL: Python-callable package with optional native core in Rust, C++, or C
+
+PURPOSE
+Build an open-source, Python-callable DWG deparser that converts one root DWG into one canonical JSON file. The JSON must preserve CAD semantics and composition semantics needed for downstream LLM consumption. The parser must treat xrefs as bound dependencies whose content often only makes sense when composed together with the host drawing in the correct geometric placement. The parser must explicitly report when xrefs are missing, broken, unresolved, or only partially parsed so the resulting JSON can be treated as incomplete.
+
+NON-NEGOTIABLE PRODUCT RULES
+1. One output artifact only: canonical JSON.
+2. Python is the public API surface.
+3. Internal implementation may use Python, Rust, C++, or C.
+4. Xrefs are composition dependencies, not isolated side documents for interpretation.
+5. Missing or broken xrefs must be explicitly reported in the JSON.
+6. The output JSON must preserve provenance back to source path and original handle.
+7. Unsupported or partially parsed content must never be silently dropped.
+8. The canonical JSON must remain deterministic and schema-versioned.
+
+KEY PRODUCT DECISION
+The package is named dwg2json because the only output format is canonical JSON. It is not a general converter and it is not a bundle generator.
+
+CORE USE CASE
+The parser is meant for cases where graphical meaning depends on composition across host DWG content and one or more xrefs. Example: device layouts over a background floor plan xref. Parsing the overlay alone is semantically weak. The parser must understand the bound context and write JSON that preserves the composed geometry relationship.
+
+PUBLIC API TARGET
+Python usage target:
+
+from pathlib import Path
+from dwg2json import Dwg2JsonParser, ParseOptions
+
+parser = Dwg2JsonParser()
+result = parser.parse(
+    Path("project/device_layout.dwg"),
+    ParseOptions(
+        resolve_xrefs=True,
+        bind_xrefs=True,
+        max_xref_depth=8,
+        missing_xref_policy="record",
+    ),
+)
+result.write_json_file()
+
+CLI usage target:
+
+dwg2json parse ./project/device_layout.dwg --out ./out --resolve-xrefs --bind-xrefs --max-xref-depth 8
+
+ARCHITECTURAL PRINCIPLE
+The canonical JSON should model two different but linked truths:
+1. Source truth: each DWG source file and its own extracted objects, entities, layers, blocks, layouts, and warnings.
+2. Composition truth: the geometrically bound interpretation where host drawing content and xref content are placed into the same coordinate frame so downstream systems can reason over the combined scene.
+
+This separation is important. It preserves provenance and allows the consumer to distinguish between source-local facts and composed-context facts.
+
+RECOMMENDED REPOSITORY STRUCTURE
+- pyproject.toml
+- README.md
+- DEVELOPMENT_PLAN.txt
+- src/dwg2json/
+  - __init__.py
+  - api.py
+  - cli.py
+  - models.py
+  - native/
+    - __init__.py
+    - bridge.py
+    - capabilities.py
+  - backends/
+    - base.py
+    - libredwg_backend.py
+    - registry.py
+  - pipeline/
+    - xref_paths.py
+    - xrefs.py
+    - compose.py
+    - export_json.py
+- tests/
+  - test_xref_paths.py
+  - test_xref_binding.py
+  - test_json_export.py
+- examples/
+- docs/
+
+CANONICAL JSON SCHEMA TARGET
+Top-level object shape:
+- schema_version
+- parser
+- root_source_id
+- sources
+- xref_graph
+- compositions
+- completeness
+- warnings
+- metadata
+
+Detailed intent:
+
+schema_version
+- semantic schema version string
+
+parser
+- parser name
+- parser version
+- backend name
+- backend version if known
+- timestamp optional
+
+root_source_id
+- id of the root DWG source
+
+sources
+Array of source documents.
+Each source document should include:
+- id
+- path
+- resolved_path
+- role: root | xref
+- exists
+- parsed
+- parse_status: parsed | partial | unresolved | missing | failed
+- parent_source_id if xref
+- xref_binding metadata
+- metadata
+- layers
+- blocks
+- entities
+- warnings
+- raw_summary optional
+
+xref_graph
+- nodes
+- edges
+Where each edge includes:
+- host_source_id
+- target_source_id
+- saved_path
+- resolved_path
+- mode: attach | overlay | unknown
+- transform
+- insertion metadata if available
+- exists
+- parsed
+- composition_required: true
+
+compositions
+Array of composed contexts.
+A composition is the semantically meaningful bound view where host and xref content are interpreted together.
+Each composition should include:
+- id
+- name
+- root_source_id
+- layout_name or model space marker
+- source_bindings
+- entity_refs
+- relation_refs
+- bbox if available
+- completeness_status: complete | partial | missing_dependencies
+- missing_source_ids
+- notes
+
+A source binding inside composition should include:
+- source_id
+- parent_source_id
+- placement_transform
+- inherited_transform_chain
+- mode
+- included_entity_ids
+- missing_dependency flag
+
+completeness
+Top-level completeness report:
+- status: complete | partial | incomplete
+- missing_xrefs_count
+- unresolved_xrefs_count
+- failed_sources_count
+- notes
+- consumer_caution string
+
+warnings
+- top-level warnings not tied to just one source
+
+metadata
+- units
+- extents
+- drawing version if known
+- parser options used
+
+ENTITY MODEL TARGET
+Each entity must preserve:
+- id
+- source_id
+- handle
+- owner_handle
+- type
+- layer
+- block_name
+- layout
+- text if any
+- bbox if available
+- transform local to source
+- composed_transform optional
+- attributes
+- xdata
+- raw subset
+- warnings
+
+XREF BINDING REQUIREMENTS
+This is a critical requirement.
+
+The parser must not just parse each xref separately and leave it at that.
+
+It must build composition contexts that effectively bind host and xref content together so geometry can be interpreted correctly.
+
+Implementation requirements:
+1. Resolve xref paths from the host drawing context.
+2. Parse reachable xref sources recursively up to a configurable depth.
+3. Record missing and broken links without pretending the scene is complete.
+4. Carry the placement transform from each xref edge.
+5. Build transform chains for nested xrefs.
+6. Emit composition contexts where entity references from host and xrefs coexist in a shared composed frame.
+7. Mark composition completeness as partial when required xrefs are missing.
+8. Preserve the difference between source-local transform and composed transform.
+
+MISSING XREF POLICY
+Default policy: record.
+
+Behavior:
+- never drop the xref declaration
+- never mark the composition as complete if a required xref is missing
+- emit a top-level completeness warning
+- attach missing dependency flags to affected compositions
+- preserve any available saved path and candidate paths
+- preserve attachment/overlay mode when known
+- surface this in a way that downstream LLM pipelines can reason about uncertainty
+
+Expected JSON consequences when xrefs are missing:
+- source entry exists with exists=false
+- parse_status=missing or unresolved
+- xref_graph edge exists
+- composition includes missing_source_ids
+- top-level completeness.status becomes partial or incomplete
+- top-level consumer_caution explains that geometry-dependent semantics may be incomplete
+
+BACKEND STRATEGY
+Primary backend: LibreDWG-oriented open backend.
+
+Backend interface responsibilities:
+- parse root DWG into source-local models
+- expose raw xref declarations
+- expose entity handles, layers, blocks, layouts, and transforms when possible
+- allow xref child parsing using the same backend
+- return structured warnings instead of throwing away unsupported data
+
+The backend must be isolated behind a stable adapter so later replacement with a Rust/C++/C implementation does not change the Python API.
+
+IMPLEMENTATION LANGUAGES
+The source code can be written in languages other than Python as long as the package is callable from Python.
+
+Recommended split:
+- Python: public API, orchestration, schema validation, JSON export, test harness
+- Rust or C++: heavy decode, geometry extraction, transform math, performance-critical traversal
+
+Recommended binding order:
+1. Rust core via PyO3/maturin if building new native logic.
+2. C++ via pybind11 if a chosen decode library or geometry library makes that easier.
+3. C via cffi or CPython extension if wrapping an existing C library is most practical.
+4. Subprocess bridge only as a temporary portability fallback.
+
+MILESTONES
+M0. Seed hardening
+- rename package surface to dwg2json
+- keep one-file JSON output only
+- define schema models
+- define xref composition models
+- implement CLI and exporter scaffolding
+
+M1. Open backend bridge bootstrap
+- wire LibreDWG-oriented reader bridge
+- extract document metadata
+- extract layers
+- extract blocks and block refs
+- extract entities for common types
+- expose raw xref declarations
+- populate warnings for unsupported classes
+
+M2. Xref resolver and composition engine
+- resolve relative and absolute paths
+- nested xref traversal
+- recursion guard
+- cache parsed child sources
+- build composed transform chains
+- emit composition contexts
+- mark partial completeness when sources are missing
+
+M3. Canonical JSON stabilisation
+- finalize schema version 0.1
+- add deterministic sorting rules
+- validate required fields
+- document consumer contract
+- produce stable diffs across repeated runs
+
+M4. Coverage expansion
+- text and mtext
+- attributes
+- dimensions and leaders
+- hatches
+- images
+- xdata
+- proxy indicators
+- basic mesh/solid metadata where possible
+
+M5. Quality gates
+- fixture corpus with nested xrefs
+- broken xref fixtures
+- transform-chain correctness tests
+- schema validation tests
+- reproducibility tests
+- partial completeness tests
+
+DETAILED TASK BREAKDOWN FOR CODEX
+1. Rename all package surfaces to dwg2json.
+2. Remove bundle-oriented language and replace it with one canonical JSON artifact.
+3. Update models so ParseResult centers on a single DwgJsonDocument object.
+4. Add SourceDocument model.
+5. Add XrefGraphNode and XrefGraphEdge models.
+6. Add Composition model and SourceBinding model.
+7. Add CompletenessReport model.
+8. Update ParseOptions to include:
+   - resolve_xrefs: bool
+   - bind_xrefs: bool
+   - max_xref_depth: int
+   - missing_xref_policy: Literal["record", "error"]
+   - out_dir: str | None
+   - backend: str
+9. Update backend base class to return a source-local parse shell plus raw xref declarations.
+10. Implement xref path candidate resolver.
+11. Implement recursive xref resolver with cache and cycle guard.
+12. Implement composition builder that binds host and xref content into shared contexts.
+13. When xrefs are missing, propagate partial completeness to affected compositions and the top-level completeness report.
+14. Implement export_json.py that writes one file named <input>.dwg.json.
+15. Ensure the exported JSON is schema-stable and pretty-printed.
+16. Update README and example usage.
+17. Add tests for path resolution, xref binding, and missing-xref completeness.
+
+DETERMINISM RULES
+- sort sources by role then resolved path then id
+- sort entities by source_id then handle then id
+- sort xref edges by host_source_id then saved_path
+- sort compositions by id
+- preserve floats as numeric values, not strings
+- do not emit nondeterministic ids if stable ids can be derived
+
+TEST CORPUS REQUIREMENTS
+Create fixtures for:
+- single DWG with no xrefs
+- DWG with one attached xref
+- DWG with nested xrefs
+- DWG with broken xref path
+- DWG with overlay xref
+- DWG where semantic interpretation clearly depends on the xref background
+
+TEST ASSERTIONS
+- missing xrefs produce partial completeness
+- xref edges remain present even if missing
+- composition contexts include host and xref source bindings when resolved
+- composition contexts include missing_source_ids when unresolved
+- output JSON file is emitted once and only once per root parse
+- provenance path and source id remain stable across runs
+
+CODING STYLE RULES FOR CODEX
+- keep the Python API small and stable
+- keep native bridges isolated
+- use pydantic models for schema enforcement
+- avoid premature optimization in seed code
+- prefer explicit names over magic
+- preserve warnings instead of throwing away information
+- document every field that carries uncertainty or partial completeness
+
+SUCCESS CRITERIA
+The seed is successful when a developer can install the package, call it from Python, parse a DWG through a placeholder backend, resolve or record xrefs, build composition contexts, and export one canonical JSON file whose schema already accounts for missing dependencies and bound xref interpretation.

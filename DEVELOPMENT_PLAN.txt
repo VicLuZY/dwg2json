@@ -1,0 +1,503 @@
+dwg2json
+Open-source DWG semantic deparser to one canonical JSON file
+
+GOAL
+
+Build an open-source package named dwg2json that can be called from Python and that parses one root DWG into one canonical JSON file. The package may be implemented partly or mostly in other languages such as C, C++, or Rust, provided the package remains callable from Python through a stable Python API.
+
+The output is only one canonical JSON file per root DWG. Do not build a multi-output converter. Do not emit markdown, text summaries, image bundles, or sidecar graph files as product outputs. Internal debug artifacts are acceptable during development, but the public contract is exactly one JSON artifact.
+
+The parser must preserve enough information content for later LLM or retrieval consumption, but the parser itself is not a general LLM pipeline. It is a DWG to JSON semantic deparser.
+
+CRITICAL INTERPRETATION RULE ABOUT XREFS
+
+DWG xrefs must not be interpreted as isolated drawings by default.
+
+In real CAD practice, overlay drawings often only make sense when interpreted together with their referenced backgrounds. A device layout over an architectural base xref is a canonical example. The geometry, symbols, and annotations in the overlay may be uninterpretable or misleading when viewed without the referenced background. Therefore:
+
+1. The parser must treat xrefs as composition bindings.
+2. The parser must interpret host drawing and resolved xrefs together in shared spatial context.
+3. The JSON must explicitly represent these composite contexts.
+4. If referenced xrefs are missing, broken, unreadable, or cycle-blocked, the JSON must explicitly state that interpretation is partial and that information content is incomplete.
+5. The parser must not silently flatten uncertainty away.
+
+LICENSE AND UPSTREAM REUSE POLICY
+
+The package is encouraged to borrow source code, wrappers, bindings, or build dependencies from existing open-source projects, provided all license obligations are respected.
+
+Requirements:
+- Maintain a third-party license ledger in the repository.
+- Preserve license headers in copied files.
+- Record whether upstream code is linked, wrapped, vendored, copied, or shell-invoked.
+- Keep incompatible license combinations isolated if needed.
+- Ensure the distributed package remains compliant.
+- Prefer direct attribution and transparent provenance over clean-room reinvention.
+
+Likely upstreams to evaluate:
+- LibreDWG
+- ACadSharp
+- libdxfrw
+- Other permissive or copyleft CAD parsing components
+
+PACKAGE IDENTITY
+
+PyPI package name: dwg2json
+Python import: dwg2json
+CLI command: dwg2json
+
+PRODUCT BOUNDARY
+
+This package does one thing:
+- parse DWG into one canonical JSON document
+
+This package does not promise:
+- perfect support for every DWG edge case in v1
+- full fidelity editing or round-trip writeback
+- a drawing viewer
+- a rendering product
+- a generic CAD conversion suite
+
+PUBLIC API TARGET
+
+Python:
+
+    from dwg2json import Dwg2JsonParser
+
+    parser = Dwg2JsonParser(...)
+    doc = parser.parse_file("input.dwg")
+    json_text = parser.parse_to_json_text("input.dwg")
+    parser.parse_to_json_file("input.dwg", "input.dwg.json")
+
+Target public class:
+- Dwg2JsonParser
+
+Target methods:
+- parse_file(path) -> CanonicalDrawingDocument
+- parse_to_json_text(path, indent=2) -> str
+- parse_to_json_file(input_path, output_path=None, indent=2) -> str
+
+Optional future methods:
+- validate_json(path_or_text)
+- parse_bytes(data, logical_name="memory.dwg")
+
+ARCHITECTURE
+
+Layer 1: Python API shell
+- stable package interface
+- config handling
+- schema validation
+- serialization
+- warnings and provenance
+
+Layer 2: backend adapter boundary
+- abstract backend interface
+- each backend returns raw parsed model plus parse warnings
+- backend may be C, C++, Rust, or managed code
+- Python must remain the stable orchestration layer
+
+Layer 3: canonical semantic normalizer
+- maps backend-specific objects into canonical JSON schema
+- preserves handles, references, ownership, layers, blocks, transforms, xrefs, warnings
+- builds composite interpretation contexts
+
+Layer 4: xref composition engine
+- resolves paths
+- detects cycles
+- loads referenced drawings recursively within limits
+- maps host transforms into shared context
+- records missing or unreadable references
+- binds overlay geometry to referenced backgrounds
+
+RECOMMENDED IMPLEMENTATION STRATEGY
+
+Phase 1 implementation preference:
+- start with a LibreDWG adapter because it is open source and already exposes substantial DWG parsing capability
+- keep adapter boundary strict so future native backends can be swapped or compared
+- do not hardcode the package around any one backend data structure
+
+Evaluate these backend strategies:
+1. C adapter around LibreDWG with cffi or ctypes
+2. Rust orchestration over C libraries with Python binding via pyo3 or maturin
+3. C++ adapter if a suitable open-source parser proves more practical
+4. managed-code optional adapter if isolated and license-compatible
+
+Do not block the project on one perfect backend. Build the canonical schema and xref model first.
+
+CANONICAL OUTPUT FORMAT
+
+One canonical UTF-8 JSON file.
+Use plain standard JSON, not JSON5, YAML, or JSON Lines.
+Use a versioned schema.
+Use stable IDs and preserve original DWG handles wherever possible.
+
+Recommended file name convention:
+- input.dwg.json
+
+TOP-LEVEL JSON SHAPE
+
+Required top-level keys:
+- schema_version
+- package_name
+- root_document_id
+- document_metadata
+- provenance
+- layers
+- layouts
+- block_definitions
+- entities
+- relations
+- xrefs
+- composite_contexts
+- missing_references
+- warnings
+- interpretation_confidence
+- interpretation_status
+
+INTERPRETATION STATUS ENUM
+- complete
+- partial
+- degraded
+- failed
+
+XREF MODEL REQUIREMENTS
+
+Each xref entry should include at least:
+- id
+- host_document_id
+- referenced_document_id if known
+- block_reference_entity_id if applicable
+- requested_path
+- resolved_path
+- status
+- overlay_mode
+- transform_into_host
+- interpretation_notes
+
+Xref status enum:
+- resolved
+- missing
+- unreadable
+- cycle_blocked
+
+Composite context requirements:
+A composite context is the minimum interpretable spatial grouping of:
+- host drawing
+- relevant resolved xrefs
+- participating layouts if applicable
+- participating entities if discoverable
+
+At minimum, create one default composite context per root drawing and additional contexts later as needed by layout, viewport, or host block insertion structure.
+
+MISSING REFERENCE MODEL REQUIREMENTS
+
+When an xref or other external dependency is missing, emit a structured missing_references entry containing:
+- kind
+- requested_path
+- normalized_path
+- resolver_root
+- parent_document_id
+- host_handles
+- impact_summary
+- severity
+- interpretation_impacted
+
+This must be reflected in:
+- interpretation_status
+- interpretation_confidence
+- warnings
+
+Do not silently continue as though the drawing is complete.
+
+SEMANTIC CONTENT TO PRESERVE
+
+Preserve as much of the following as possible in v1:
+- document summary info
+- units
+- layers
+- layouts
+- block definitions
+- block references
+- inserts
+- attributes
+- text and mtext
+- dimensions
+- leaders and mleaders
+- hatches
+- image references
+- underlays if discoverable
+- basic mesh and solid metadata
+- xdata
+- handles
+- ownership relationships
+- transforms
+- extents or bounds where available
+- xref bindings and dependency tree
+- parse warnings
+- provenance
+
+Do not throw away invisible attributes.
+Do not flatten blocks irreversibly.
+Do not sever xref provenance.
+
+CANONICAL ENTITY RULES
+
+Each canonical entity should carry:
+- canonical id
+- original handle if present
+- owner handle if present
+- kind
+- layer id
+- layout id
+- block definition id if entity belongs to a block
+- text if textual
+- attributes dictionary
+- geometry payload
+- bounds if known
+- transform if known
+- source_document_id
+- source_xref_id
+- tags
+
+The goal is to preserve both semantic and spatial meaning.
+
+SCHEMA DESIGN RULES
+
+- Prefer explicit names over compact names.
+- Preserve unknown backend fields in extensible metadata sections where useful.
+- Use stable enums.
+- Make schema forward-compatible.
+- Ship a JSON Schema file for validation.
+- Add schema tests.
+- Add example files.
+
+PROVENANCE RULES
+
+Every output JSON must record:
+- backend name
+- backend version if known
+- source file path or logical source
+- parse timestamp
+- parse mode
+- unresolved dependency count
+- whether composite interpretation was attempted
+
+DEPENDENCY RESOLUTION RULES
+
+The parser must support search roots for external references.
+Resolution priority:
+1. absolute path if provided
+2. relative to current DWG
+3. configured xref search roots
+4. future configurable environment search paths
+
+All attempted resolutions should be optionally loggable for debugging.
+
+Cycle handling:
+- detect recursive xref loops
+- stop safely
+- record cycle_blocked status
+- degrade confidence accordingly
+
+NORMALIZATION RULES FOR XREF COMPOSITION
+
+This is the most important behavior.
+
+For a resolved xref:
+- preserve the xref binding
+- preserve the transform into host context
+- preserve overlay mode if known
+- bind the referenced geometry into composite interpretation contexts
+- do not claim the xref was independently interpretable unless explicitly analyzing it as its own root document
+
+For a missing xref:
+- preserve the requested path
+- record that referenced geometry is unavailable
+- record which host entities or handles depend on the missing reference
+- mark interpretation as partial
+- lower confidence
+- emit clear warning text that overlay-hosted content may be semantically incomplete without the background
+
+For broken project folders in the wild:
+- assume they are common
+- design the JSON so downstream systems can recognize partial-information cases
+- never hide missing context
+
+REPOSITORY LAYOUT TARGET
+
+dwg2json/
+  pyproject.toml
+  README.md
+  LICENSE
+  LICENSES_THIRD_PARTY.md
+  DEVELOPMENT_PLAN.txt
+  src/dwg2json/__init__.py
+  src/dwg2json/parser.py
+  src/dwg2json/models.py
+  src/dwg2json/backends.py
+  src/dwg2json/xref.py
+  src/dwg2json/schema/
+  tests/
+  examples/
+  native/
+    libredwg_adapter/
+    or other backend adapters
+
+DEVELOPMENT PHASES
+
+PHASE 0: foundation
+- finalize package identity
+- freeze product boundary
+- freeze one-output JSON direction
+- create canonical schema draft
+- create license ledger template
+- create adapter interface
+- create CI scaffold
+
+PHASE 1: seed parser and schema
+- implement Python shell
+- implement null backend
+- implement canonical models
+- implement serialization
+- implement smoke tests
+- implement example JSON
+- implement CLI
+
+PHASE 2: first native backend
+- integrate first open-source backend
+- parse document metadata
+- parse layers
+- parse layouts
+- parse blocks and inserts
+- parse attributes
+- parse text
+- parse xref references
+- map warnings
+- preserve handles and ownership
+
+PHASE 3: xref composition engine
+- implement recursive xref load orchestration
+- implement resolution search order
+- implement cycle detection
+- implement transform propagation
+- implement composite context creation
+- implement missing-reference reporting
+- implement interpretation confidence heuristics
+
+PHASE 4: semantic coverage expansion
+- dimensions
+- leaders
+- hatches
+- image references
+- xdata
+- mesh and solid metadata
+- underlays if discoverable
+- more object tables and styles as needed
+
+PHASE 5: robustness
+- regression corpus
+- malformed file handling
+- fuzz testing
+- large project performance
+- nested xrefs
+- broken path scenarios
+- cross-version DWG sampling
+
+PHASE 6: packaging and compliance
+- ship wheels where feasible
+- document native build strategies
+- finalize third-party notices
+- verify license compliance
+- publish to PyPI
+- publish schema docs and examples
+
+TEST PLAN
+
+Need all of these:
+1. unit tests
+2. integration tests
+3. schema validation tests
+4. xref path resolution tests
+5. xref cycle tests
+6. broken xref tests
+7. nested xref composition tests
+8. golden JSON tests
+9. performance smoke tests
+10. license compliance checks
+
+Golden corpus categories:
+- simple single-file DWG
+- layered architectural floor plan
+- drawing with blocks and attributes
+- drawing with nested block references
+- drawing with one resolved xref
+- drawing with multiple resolved xrefs
+- drawing with missing xrefs
+- drawing with xref cycles
+- drawing with images or underlays
+- drawing with proxy-like unsupported content
+- drawing with broken metadata but valid geometry
+
+CONFIDENCE HEURISTICS
+
+Implement an explicit confidence heuristic.
+Confidence should be reduced by:
+- missing xrefs
+- unreadable xrefs
+- cycle-blocked xrefs
+- unsupported major object types
+- backend parse warnings
+- missing text or attribute extraction where expected
+
+This does not need to be probabilistically perfect in v1.
+It does need to be transparent and monotonic.
+
+EXAMPLE WARNING TEXTS
+
+- Missing xref prevented full composite interpretation of overlay geometry.
+- Referenced background drawing was unavailable. Spatial relationships may be incomplete.
+- Recursive xref loop detected. Reference expansion stopped safely.
+- Native backend reported unsupported object classes. Information may be incomplete.
+
+CODING RULES
+
+- Keep Python public API clean and minimal.
+- Use dataclasses or Pydantic models for canonical structures.
+- Separate raw backend objects from canonical objects.
+- Avoid backend-specific names in the public schema.
+- Preserve source handles faithfully.
+- Make uncertainty explicit.
+- Prefer additive schema evolution.
+- Write tests first for xref missing-path behavior.
+
+DELIVERABLES FOR INITIAL CODING SPRINT
+
+1. Python package scaffold
+2. canonical models
+3. JSON serialization
+4. CLI
+5. backend adapter boundary
+6. null backend
+7. xref resolver
+8. missing reference schema
+9. composite context schema
+10. golden example JSON for missing xref case
+11. tests
+12. license ledger template
+
+STRETCH GOALS
+
+- optional Rust backend
+- optional parallel parsing for xref trees
+- optional spatial indexing inside canonical JSON
+- optional schema compaction mode
+- optional stable source hashing
+- optional project-level manifest for many root DWGs, but keep per-DWG JSON as the core product artifact
+
+INSTRUCTION TO CODEX
+
+Implement the repository exactly around the one-output JSON contract.
+Do not drift into multi-output conversion.
+Treat xrefs as compositional dependencies, not merely linked side files.
+Assume missing xrefs are common in real project archives and represent them explicitly.
+Feel free to borrow or depend on open-source components, but maintain rigorous license accounting and compliance.
+Keep Python as the stable public control surface even if the parsing core is native.

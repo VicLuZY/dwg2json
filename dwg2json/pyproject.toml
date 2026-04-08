@@ -1,0 +1,57 @@
+[build-system]
+requires = ["hatchling>=1.27.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "dwg2json"
+version = "0.1.0a0"
+description = "Python-callable DWG to canonical JSON deparser with xref-bound composition semantics"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "AGPL-3.0-or-later"
+authors = [
+  { name = "Open Source Seed" }
+]
+keywords = ["dwg", "json", "cad", "parser", "xref", "aec"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Software Development :: Libraries :: Python Modules",
+  "Topic :: Scientific/Engineering"
+]
+dependencies = [
+  "pydantic>=2.11,<3",
+  "typing-extensions>=4.12",
+  "orjson>=3.10,<4",
+  "rich>=14,<15",
+  "typer>=0.16,<1"
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.3,<9",
+  "pytest-cov>=6,<7",
+  "ruff>=0.11,<0.12",
+  "mypy>=1.15,<2"
+]
+
+[project.scripts]
+dwg2json = "dwg2json.cli:app"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/dwg2json"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+addopts = "-q"
