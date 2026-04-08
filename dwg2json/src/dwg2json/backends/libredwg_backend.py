@@ -684,10 +684,13 @@ def _extract_geodata_summary(dxf_doc: Any, options: ParseOptions) -> GeodataSumm
         pass
     h_scale = dxf.get("horizontal_unit_scale", None)
     v_scale = dxf.get("vertical_unit_scale", None)
+    ctype_name: str | None = None
+    if ctype is not None:
+        ctype_name = _COORD_TYPE_NAMES.get(ctype, str(ctype))
     return GeodataSummary(
         dxf_version=dxf.get("version", None),
         coordinate_type=ctype,
-        coordinate_type_name=_COORD_TYPE_NAMES.get(ctype, str(ctype)) if ctype is not None else None,
+        coordinate_type_name=ctype_name,
         design_point=_vec(dxf.get("design_point", None)),
         reference_point=_vec(dxf.get("reference_point", None)),
         horizontal_unit_scale=float(h_scale) if h_scale is not None else None,
@@ -764,7 +767,7 @@ def _clean_handle(val: Any) -> str | None:
 
 
 def _json_safe_plot_value(val: Any) -> Any:
-    if isinstance(val, (bool, int, float, str)):
+    if isinstance(val, bool | int | float | str):
         return val
     try:
         return float(val)
@@ -881,7 +884,8 @@ def _detect_layer_vp_property_overrides(
                         code="layer-vp-property-overrides-not-exported",
                         message=(
                             "One or more layers define per-viewport property overrides "
-                            "(color, linetype, …) in DXF OBJECTS; dwg2json does not expand these yet."
+                            "(color, linetype, …) in DXF OBJECTS; "
+                            "dwg2json does not expand these yet."
                         ),
                         severity="info",
                         source_id=root_id,

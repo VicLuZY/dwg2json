@@ -8,7 +8,7 @@ import ezdxf
 
 from dwg2json.api import Dwg2JsonParser
 from dwg2json.backends.libredwg_backend import LibreDwgBackend
-from dwg2json.models import Entity, Layer, Layout, ParseOptions
+from dwg2json.models import Entity, Layout, ParseOptions
 from tests.conftest import FakeBackend
 
 
